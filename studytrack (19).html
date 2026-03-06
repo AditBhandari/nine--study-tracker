@@ -1,0 +1,2495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>9</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #0a0a0a;
+    --card: #111;
+    --border: rgba(192,57,43,0.3);
+    --accent: #c0392b;
+    --accent2: #888;
+    --gold: #ccc;
+    --red: #666;
+    --text: #fff;
+    --muted: #555;
+    --glow: rgba(255,255,255,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { height: 100%; }
+
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(30,30,30,0.6) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(20,20,20,0.8) 0%, transparent 50%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    overflow: clip;
+  }
+
+
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 72px;
+    background: var(--surface);
+    border-right: 1px solid rgba(192,57,43,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    gap: 6px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .sidebar-logo {
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: .1em;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  .nav-btn {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+    position: relative;
+  }
+  .nav-btn:hover { background: var(--card); color: var(--text); }
+  .nav-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+  .nav-btn .tooltip {
+    position: absolute;
+    left: calc(100% + 10px);
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    color: var(--text);
+    font-size: 11px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: opacity .15s;
+    z-index: 100;
+  }
+  .nav-btn:hover .tooltip { opacity: 1; }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .xp-pill {
+    width: 40px;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 8px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .xp-pill span {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 9px;
+    color: var(--accent2);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    letter-spacing: .05em;
+  }
+
+  /* ── MAIN ── */
+  .main { flex: 1; overflow-y: auto; height: 100vh; }
+
+  .page { display: none; padding: 40px; animation: fadeIn .3s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ── HEADINGS ── */
+  .page-title {
+    font-family: 'Source Serif 4', serif;
+    font-size: 38px;
+    font-weight: 400;
+    letter-spacing: .01em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .page-sub {
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 300;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  /* ── TIMER PAGE ── */
+  .timer-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+  }
+
+  .timer-card {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 36px;
+    display: flex; flex-direction: column; align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+
+
+  .subject-row {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 28px;
+  }
+  .subj-chip {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(192,57,43,0.3);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .subj-chip.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+
+  .timer-display {
+    font-family: 'Source Serif 4', serif;
+    font-size: 96px;
+    font-weight: 400;
+    letter-spacing: .01em;
+    color: var(--text);
+    
+    line-height: 1;
+    margin: 10px 0 8px;
+    transition: color .3s;
+  }
+  .timer-display.running { color: var(--accent); }
+
+  .timer-label {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .note-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: var(--text);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    outline: none;
+    margin-bottom: 24px;
+    transition: border-color .2s;
+  }
+  .note-input:focus { border-color: var(--accent); }
+  .note-input::placeholder { color: var(--muted); }
+
+  .timer-btns {
+    display: flex; gap: 10px; width: 100%;
+  }
+  .btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s;
+    flex: 1;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-save { background: var(--border); color: var(--text); border: 1px solid rgba(192,57,43,0.3); }
+  .btn-save:hover { background: #2a2a2a; }
+  .btn-ghost { background: var(--surface); color: var(--muted); border: 1px solid rgba(192,57,43,0.3); }
+  .btn-ghost:hover { color: var(--text); }
+
+  /* ── RIGHT PANEL (profile + recent) ── */
+  .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+  .profile-card {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+
+  .level-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    color: var(--accent2);
+    margin-bottom: 10px;
+  }
+
+  .profile-name {
+    font-family: 'Source Serif 4', serif;
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: .01em;
+    margin-bottom: 4px;
+  }
+
+  .streak-row {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .streak-row span { color: #ff9f1c; }
+
+  .xp-bar-wrap {
+    background: var(--surface);
+    border-radius: 6px;
+    height: 8px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .xp-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 6px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+  .xp-label {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    color: var(--muted);
+    display: flex; justify-content: space-between;
+  }
+
+  /* ── recent sessions ── */
+  .sessions-card {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 20px;
+    flex: 1;
+    overflow: hidden;
+  }
+  .sessions-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: 14px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+
+  .session-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(192,57,43,0.3);
+    animation: slideIn .3s ease;
+  }
+  @keyframes slideIn { from { opacity:0; transform: translateX(-6px); } to { opacity:1; transform:none; } }
+  .session-item:last-child { border-bottom: none; }
+  .session-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .session-info { flex: 1; }
+  .session-subj { font-size: 13px; font-weight: 600; }
+  .session-note { font-size: 11px; color: var(--muted); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .session-meta { text-align: right; }
+  .session-dur { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: var(--text); }
+  .session-xp { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: var(--muted); }
+
+  .empty-msg {
+    color: var(--muted);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  /* ── STATS PAGE ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: .12;
+  }
+
+  .stat-label { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+  .stat-value { font-family: 'Source Serif 4', serif; font-size: 30px; font-weight: 400; letter-spacing: .01em; }
+  .stat-card .stat-value { color: var(--text); }
+
+
+
+
+  .charts-row { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+
+  .chart-card {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 24px;
+  }
+  .chart-title { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 18px; }
+
+  .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 160px; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+  .bar {
+    width: 100%;
+    background: #333;
+    border-radius: 6px 6px 0 0;
+    min-height: 4px;
+    transition: height .6s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .bar.today { background: #fff; }
+  .bar-val { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 9px; color: var(--muted); }
+  .bar-day { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 9px; color: var(--muted); }
+
+  /* subject donut */
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .donut-svg { width: 130px; height: 130px; }
+  .donut-legend { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { flex: 1; color: var(--muted); }
+  .legend-pct { color: var(--text); }
+
+  
+  .input-field {
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: var(--muted); }
+  .btn-small {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(192,57,43,0.3);
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-small:hover { opacity: .85; }
+
+  /* ── SETTINGS PAGE ── */
+  .settings-section {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    max-width: 560px;
+    position: relative;
+  }
+  .settings-section h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin-bottom: 18px; }
+
+  .settings-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .settings-row label { width: 120px; font-size: 13px; color: var(--muted); flex-shrink: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .settings-row .input-field { flex: 1; }
+
+  .btn-danger { background: var(--red); color: white; padding: 10px 20px; border-radius: 10px; border: none; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 700; cursor: pointer; transition: all .2s; }
+  .btn-danger:hover { opacity: .85; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: 14px;
+    padding: 14px 22px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,.4), 0 0 18px var(--glow);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .4s cubic-bezier(.34,1.56,.64,1);
+    z-index: 9000;
+    max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { font-size: 20px; margin-bottom: 4px; }
+  .toast-title { font-weight: 700; color: var(--accent2); margin-bottom: 4px; }
+  .toast-body { color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  
+  /* ── CALCULATOR PAGE ── */
+  .calc-outer {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+  .calc-body {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset;
+    width: 280px;
+    flex-shrink: 0;
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 14px;
+    overflow: clip;
+    position: relative;
+  }
+  .calc-screen {
+    background: #000;
+    padding: 18px 18px 14px;
+    text-align: right;
+    border-bottom: 1px solid rgba(192,57,43,0.3);
+  }
+  .calc-expr {
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 4px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    letter-spacing: .04em;
+  }
+  .calc-result {
+    font-family: 'Source Serif 4', serif;
+    font-size: 48px;
+    font-weight: 400;
+    color: #fff;
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: .01em;
+  }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .calc-btn {
+    height: 62px;
+    border: none;
+    border-top: 1px solid rgba(192,57,43,0.3);
+    border-right: 1px solid rgba(192,57,43,0.3);
+    background: #111;
+    color: #fff;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    cursor: pointer;
+    transition: background .1s;
+    user-select: none;
+  }
+  .calc-btn:hover  { background: #1c1c1c; }
+  .calc-btn:active { background: #262626; }
+  .calc-btn:nth-child(4n) { border-right: none; }
+  .calc-btn.op  { color: #777; background: #0c0c0c; }
+  .calc-btn.op:hover { background: #171717; }
+  .calc-btn.fn  { color: #666; background: #0a0a0a; }
+  .calc-btn.fn:hover { background: #141414; }
+  .calc-btn.eq  { background: var(--accent); color: #fff; border-right: none; }
+  .calc-btn.eq:hover { opacity: .85; background: var(--accent); }
+  .calc-btn.zero { grid-column: span 2; border-right: 1px solid rgba(192,57,43,0.3); }
+  .calc-history { flex: 1; min-width: 0; }
+  .calc-history-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .calc-history-title {
+    font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .1em;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  .calc-history-clear {
+    font-size: 10px; color: #333; text-transform: uppercase;
+    letter-spacing: .08em; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    cursor: pointer; border: none; background: none; padding: 0; transition: color .15s;
+  }
+  .calc-history-clear:hover { color: var(--muted); }
+  .calc-history-list { display: flex; flex-direction: column; gap: 6px; max-height: 400px; overflow-y: auto; }
+  .calc-history-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 10px 14px; background: var(--card); border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 8px; cursor: pointer; transition: border-color .15s;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px;
+  }
+  .calc-history-item:hover { border-color: #444; }
+  .calc-history-item .h-expr   { color: var(--muted); flex: 1; }
+  .calc-history-item .h-result { color: #fff; font-weight: 700; flex-shrink: 0; }
+  .calc-empty { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: var(--muted); }
+
+  /* ── TODO PAGE ── */
+  .todo-wrap { max-width: 560px; }
+  .todo-input-row {
+    display: flex; gap: 10px; margin-bottom: 28px;
+  }
+  .todo-input {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .todo-input:focus { border-color: #444; }
+  .todo-input::placeholder { color: var(--muted); font-weight: 400; }
+  .todo-add-btn {
+    padding: 12px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    cursor: pointer;
+    transition: background .15s;
+    flex-shrink: 0;
+  }
+  .todo-add-btn:hover { opacity: .85; }
+  .todo-filters {
+    display: flex; gap: 6px; margin-bottom: 20px;
+  }
+  .todo-filter {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(192,57,43,0.3);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .todo-filter.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .todo-list { display: flex; flex-direction: column; gap: 8px; }
+  .todo-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 10px;
+    transition: border-color .15s, opacity .2s;
+    animation: slideIn .2s ease;
+  }
+  .todo-item:hover { border-color: #333; }
+  .todo-item.done { opacity: .4; }
+  .todo-check {
+    width: 20px; height: 20px; flex-shrink: 0;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    background: transparent;
+    font-size: 11px;
+    color: transparent;
+  }
+  .todo-item.done .todo-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .todo-check:hover { border-color: #666; }
+  .todo-text {
+    flex: 1;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text);
+    outline: none;
+    background: transparent;
+    border: none;
+    cursor: text;
+  }
+  .todo-item.done .todo-text { text-decoration: line-through; color: var(--muted); }
+  .todo-delete {
+    width: 28px; height: 28px;
+    border: none; background: transparent;
+    color: #333; font-size: 14px;
+    cursor: pointer; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s; flex-shrink: 0;
+  }
+  .todo-delete:hover { color: #888; background: var(--surface); }
+  .todo-empty {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 12px; color: var(--muted);
+    text-align: center; padding: 40px 0;
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .todo-footer {
+    margin-top: 20px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .08em;
+    display: flex; justify-content: space-between;
+  }
+  .todo-clear-done {
+    background: none; border: none; color: #333;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+    cursor: pointer; transition: color .15s; padding: 0;
+  }
+  .todo-clear-done:hover { color: var(--muted); }
+
+  /* ── NOTES PAGE ── */
+  .notes-layout {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset; display: grid; grid-template-columns: 220px 1fr; gap: 0; height: calc(100vh - 160px); border: 1px solid rgba(192,57,43,0.3); border-radius: 12px; overflow: hidden; }
+  .notes-sidebar { background: var(--card); border-right: 1px solid rgba(192,57,43,0.3); display: flex; flex-direction: column; overflow: hidden; }
+  .notes-sidebar-header { padding: 14px 16px; border-bottom: 1px solid rgba(192,57,43,0.3); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .notes-sidebar-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .notes-new-btn { background: var(--accent); color: #fff; border: none; border-radius: 6px; width: 24px; height: 24px; font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
+  .notes-new-btn:hover { opacity: .85; }
+  .notes-list { flex: 1; overflow-y: auto; }
+  .notes-list-item { padding: 12px 16px; border-bottom: 1px solid rgba(192,57,43,0.3); cursor: pointer; transition: background .15s; position: relative; }
+  .notes-list-item:hover { background: #1a1a1a; }
+  .notes-list-item.active { background: #1c1c1c; border-left: 2px solid var(--accent); padding-left: 14px; }
+  .notes-list-item-title { font-size: 12px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .04em; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+  .notes-list-item-preview { font-size: 10px; color: var(--muted); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: none; font-weight: 400; letter-spacing: 0; }
+  .notes-list-item-date { font-size: 9px; color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin-top: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .notes-list-item-del { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #333; font-size: 13px; cursor: pointer; opacity: 0; transition: opacity .15s, color .15s; padding: 4px; }
+  .notes-list-item:hover .notes-list-item-del { opacity: 1; }
+  .notes-list-item-del:hover { color: #888; }
+  .notes-editor { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+  .notes-editor-header { padding: 14px 20px 0; flex-shrink: 0; }
+  .notes-title-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(192,57,43,0.3); color: var(--text); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: .04em; outline: none; padding-bottom: 10px; margin-bottom: 2px; transition: border-color .2s; }
+  .notes-title-input:focus { border-bottom-color: #444; }
+  .notes-title-input::placeholder { color: #2a2a2a; }
+  .notes-meta { font-size: 9px; color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; text-transform: uppercase; letter-spacing: .06em; padding: 8px 0 12px; }
+  .notes-body-input { flex: 1; background: transparent; border: none; color: var(--text); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 400; font-size: 14px; line-height: 1.7; letter-spacing: .01em; text-transform: none; outline: none; resize: none; padding: 0 20px 20px; }
+  .notes-body-input::placeholder { color: #252525; }
+  .notes-empty-state { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
+  .notes-empty-state p { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .notes-empty-list { padding: 20px 16px; font-size: 10px; color: #333; text-transform: uppercase; letter-spacing: .08em; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+
+  .todo-date-input {
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 10px;
+    padding: 12px 12px;
+    color: var(--muted);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    outline: none;
+    transition: border-color .2s;
+    cursor: pointer;
+    flex-shrink: 0;
+    color-scheme: dark;
+  }
+  .todo-date-input:focus { border-color: #444; }
+  .todo-due {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(192,57,43,0.3);
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .todo-due.overdue { color: #ff6b6b; border-color: #ff6b6b33; background: #ff6b6b0d; }
+  .todo-due.today   { color: #fff;    border-color: #ffffff44; background: #ffffff0d; }
+  .todo-due.soon    { color: #aaa;    border-color: #aaaaaa33; }
+
+  /* ── COUNTDOWNS ── */
+  .countdowns-strip {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    max-width: 100%;
+  }
+  .countdown-card {
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    min-width: 130px;
+    position: relative;
+    transition: border-color .15s;
+  }
+  .countdown-card:hover { border-color: #333; }
+  .countdown-label {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+  .countdown-days {
+    font-family: 'Source Serif 4', serif;
+    font-size: 34px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: .01em;
+  }
+  .countdown-days.urgent { color: #ff6b6b; }
+  .countdown-days.today  { color: #fff; }
+  .countdown-unit {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .countdown-del {
+    position: absolute;
+    top: 6px; right: 8px;
+    background: none; border: none;
+    color: #2a2a2a; font-size: 11px;
+    cursor: pointer; padding: 2px 4px;
+    transition: color .15s;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  .countdown-card:hover .countdown-del { color: #666; }
+
+  /* settings countdown section */
+  .countdown-settings-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .countdown-settings-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 8px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 12px;
+  }
+  .countdown-settings-item span { color: var(--muted); font-size: 11px; }
+  .countdown-settings-item button {
+    background: none; border: none; color: #444;
+    cursor: pointer; font-size: 13px; transition: color .15s;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  .countdown-settings-item button:hover { color: #888; }
+  .countdown-add-row {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  }
+
+  /* ── SYLLABUS PAGE ── */
+  .syl-layout { display: grid; grid-template-columns: 180px 1fr; gap: 0; }
+  .syl-nav { border-right: 1px solid rgba(192,57,43,0.3); padding-top: 4px; position: sticky; top: 0; align-self: start; }
+  .syl-nav-btn {
+    display: block; width: 100%; text-align: left;
+    padding: 10px 16px; border: none; background: transparent;
+    color: var(--muted); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+    cursor: pointer; transition: all .15s; border-left: 2px solid transparent;
+  }
+  .syl-nav-btn:hover { color: var(--text); background: #111; }
+  .syl-nav-btn.active { color: #fff; border-left-color: var(--accent); background: #111; }
+  .syl-nav-prog {
+    font-size: 9px; color: #444; margin-top: 2px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 400; text-transform: uppercase; letter-spacing: .06em;
+  }
+  .syl-content { padding: 0 0 40px 28px; }
+  .syl-subject-title {
+    font-family: 'Source Serif 4', serif;
+    font-size: 32px; font-weight: 400; letter-spacing: .01em;
+    margin-bottom: 6px; text-transform: uppercase;
+  }
+  .syl-subject-stats {
+    font-size: 10px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .08em; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin-bottom: 24px; display: flex; gap: 20px;
+  }
+  .syl-subject-stats span { color: var(--text); }
+  .syl-progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 28px; overflow: hidden; }
+  .syl-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s; }
+  .syl-chapter {
+    display: grid;
+    grid-template-columns: 1fr 28px 28px 28px 28px;
+    align-items: center; gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(192,57,43,0.3);
+    transition: background .1s;
+  }
+  .syl-chapter:last-child { border-bottom: none; }
+  .syl-chapter-name {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .04em; color: var(--text);
+  }
+  .syl-chapter.mastered .syl-chapter-name { color: var(--muted); }
+  .syl-cb-wrap {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 2px;
+  }
+  .syl-cb {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: transparent;
+    transition: all .15s; flex-shrink: 0;
+    user-select: none;
+  }
+  .syl-cb:hover { border-color: #555; }
+  .syl-cb.checked { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .syl-cb.checked-4 { background: #ffd700; border-color: #ffd700; color: #000; }
+  .syl-cb-label {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 8px; color: #333; text-transform: uppercase;
+    letter-spacing: .04em; text-align: center; line-height: 1.1; white-space: nowrap;
+  }
+  .syl-col-headers {
+    display: grid;
+    grid-template-columns: 1fr 28px 28px 28px 28px;
+    gap: 8px; margin-bottom: 4px;
+    padding-bottom: 8px; border-bottom: 1px solid rgba(192,57,43,0.3);
+  }
+  .syl-col-hdr {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 8px; color: #333; text-transform: uppercase;
+    letter-spacing: .06em; text-align: center; line-height: 1.3;
+  }
+
+  /* ── MOBILE RESPONSIVE ────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+
+    /* Body: column layout, bottom nav */
+    html, body { height: 100%; }
+    body { flex-direction: column; overflow: hidden; }
+
+    /* Hide desktop sidebar */
+    .sidebar { display: none; }
+
+    /* Bottom nav bar */
+    .bottom-nav {
+      display: flex !important;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid rgba(192,57,43,0.3);
+      z-index: 100;
+      padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .bottom-nav::-webkit-scrollbar { display: none; }
+    .bottom-nav .nav-btn {
+      flex: 0 0 auto;
+      width: 56px; height: 52px;
+      border-radius: 10px;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 18px;
+    }
+    .bottom-nav .nav-btn .tooltip { display: none; }
+    .bottom-nav .nav-btn .nav-label {
+      font-size: 8px;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: inherit;
+    }
+
+    /* Main scrolls, add bottom padding for nav bar */
+    .main {
+      height: auto;
+      min-height: 0;
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 80px;
+    }
+
+    /* Pages: tighter padding on mobile */
+    .page { padding: 20px 16px; }
+
+    /* Page title smaller on mobile */
+    .page-title { font-size: 28px; }
+
+    /* Timer layout: single column */
+    .timer-layout {
+      grid-template-columns: 1fr;
+    }
+    .timer-card {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset; padding: 20px 16px; }
+    .timer-display { font-size: 68px; }
+
+    /* Stats grid: 2x2 */
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+
+    /* Countdowns: scrollable row */
+    .countdowns-strip { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+    .countdown-card { flex-shrink: 0; }
+
+    /* Todo input row: wrap */
+    .todo-input-row { flex-wrap: wrap; }
+    .todo-date-input { width: 100% !important; }
+
+    /* Syllabus: stack nav on top */
+    .syl-layout { grid-template-columns: 1fr; }
+    .syl-nav {
+      display: flex; flex-direction: row; overflow-x: auto;
+      border-right: none; border-bottom: 1px solid rgba(192,57,43,0.3);
+      padding: 0; gap: 0;
+    }
+    .syl-nav-btn {
+      flex-shrink: 0; border-left: none;
+      border-bottom: 2px solid transparent;
+      padding: 10px 14px; font-size: 10px;
+    }
+    .syl-nav-btn.active { border-left: none; border-bottom-color: var(--accent); padding-left: 14px; }
+    .syl-nav-prog { display: none; }
+    .syl-content { padding: 16px 0 40px 0; }
+    .syl-chapter { grid-template-columns: 1fr 26px 26px 26px 26px; gap: 4px; }
+
+    /* Notes: stack sidebar above editor */
+    .notes-layout {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset; grid-template-columns: 1fr; height: auto; }
+    .notes-sidebar { max-height: 200px; border-right: none; border-bottom: 1px solid rgba(192,57,43,0.3); }
+    .notes-editor { min-height: 300px; }
+
+    /* Calc: full width */
+    .calc-outer { flex-direction: column; }
+    .calc-body {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset; width: 100%; }
+    .calc-history { width: 100%; margin-top: 20px; }
+
+    /* Chat: layout fills screen */
+    .chat-layout { height: calc(100vh - 200px); }
+
+    /* Settings sections */
+    .settings-section {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03) inset; padding: 16px; }
+    .settings-row { flex-wrap: wrap; }
+    .settings-row label { width: 100%; margin-bottom: 4px; }
+    .add-friend-row { flex-direction: column; }
+
+    /* Board bar: hide on small screens */
+    .board-bar-wrap { display: none; }
+
+    /* Timer buttons */
+    .timer-btns { flex-wrap: wrap; }
+
+    /* XP pill hidden in sidebar (sidebar hidden anyway) */
+    .sidebar-bottom { display: none; }
+  }
+
+  @media (max-width: 400px) {
+    .timer-display { font-size: 56px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .page { padding: 16px 12px; }
+  }
+
+  /* ── CARD TEXTURE ── */
+  /* Subtle dot-grid noise on all major cards */
+  .timer-card::after,
+  .profile-card::after,
+  .sessions-card::after,
+  .stat-card::after,
+  .chart-card::after,
+  .settings-section::after,
+  .calc-body::after,
+  .todo-wrap .sessions-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    z-index: 0;
+  }
+
+  /* ensure card children sit above texture */
+  .timer-card > *,
+  .profile-card > *,
+  .sessions-card > *,
+  .stat-card > *,
+  .chart-card > *,
+  .settings-section > * { position: relative; z-index: 1; }
+
+  /* notes sidebar + editor texture */
+  .notes-sidebar::after,
+  .notes-editor::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .03;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 22px,
+      rgba(255,255,255,.6) 22px,
+      rgba(255,255,255,.6) 23px
+    );
+    z-index: 0;
+  }
+  .notes-sidebar, .notes-editor { position: relative; }
+  .notes-sidebar > *, .notes-editor > * { position: relative; z-index: 1; }
+
+  /* ── AUTH SCREEN ── */
+  .auth-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9000;
+    padding: 24px;
+  }
+  .auth-card {
+    background: var(--card);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%; max-width: 360px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .auth-title {
+    font-family: 'Source Serif 4', serif;
+    font-size: 32px; font-weight: 400;
+    letter-spacing: .01em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .auth-sub {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .1em;
+    margin-bottom: 28px;
+  }
+  .auth-field {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 13px; font-weight: 400;
+    text-transform: none; letter-spacing: .01em;
+    outline: none; margin-bottom: 12px;
+    transition: border-color .2s;
+  }
+  .auth-field:focus { border-color: var(--accent); }
+  .auth-field::placeholder { color: var(--muted); }
+  .auth-btn {
+    width: 100%; padding: 13px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700; font-size: 13px;
+    text-transform: uppercase; letter-spacing: .06em;
+    cursor: pointer; transition: opacity .15s;
+    margin-bottom: 12px;
+  }
+  .auth-btn:hover { opacity: .85; }
+  .auth-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .auth-switch {
+    text-align: center;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em;
+  }
+  .auth-switch span {
+    color: var(--text); cursor: pointer; text-decoration: underline;
+  }
+  .auth-error {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px; color: #ff6b6b;
+    text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: 12px; min-height: 16px;
+  }
+  .auth-user-row {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0;
+  }
+  .auth-logout {
+    background: none; border: none; color: #555;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+    cursor: pointer; transition: color .15s; padding: 0;
+  }
+  .auth-logout:hover { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">Nine</div>
+  <button class="nav-btn active" data-page="timer" onclick="showPage('timer')">◷<span class="tooltip">Timer</span></button>
+  <button class="nav-btn" data-page="stats" onclick="showPage('stats')">▦<span class="tooltip">Stats</span></button>
+  <button class="nav-btn" data-page="todo" onclick="showPage('todo')">☐<span class="tooltip">To-Do</span></button>
+  <button class="nav-btn" data-page="settings" onclick="showPage('settings')">⊙<span class="tooltip">Settings</span></button>
+  <button class="nav-btn" data-page="calc" onclick="showPage('calc')">#<span class="tooltip">Calculator</span></button>
+  <button class="nav-btn" data-page="notes" onclick="showPage('notes')">≡<span class="tooltip">Notes</span></button>
+  <button class="nav-btn" data-page="syllabus" onclick="showPage('syllabus')">⊞<span class="tooltip">Syllabus</span></button>
+
+  <div class="sidebar-bottom">
+    <div class="xp-pill">
+      <span id="sb-xp">0 XP</span>
+    </div>
+  </div>
+</nav>
+
+<!-- BOTTOM NAV (mobile only) -->
+<nav class="bottom-nav" style="display:none;">
+  <button class="nav-btn active" data-page="timer" onclick="showPage('timer')">◷<span class="nav-label">Timer</span><span class="tooltip">Timer</span></button>
+  <button class="nav-btn" data-page="stats" onclick="showPage('stats')">▦<span class="nav-label">Stats</span><span class="tooltip">Stats</span></button>
+  <button class="nav-btn" data-page="todo" onclick="showPage('todo')">☐<span class="nav-label">Todo</span><span class="tooltip">To-Do</span></button>
+  <button class="nav-btn" data-page="notes" onclick="showPage('notes')">≡<span class="nav-label">Notes</span><span class="tooltip">Notes</span></button>
+  <button class="nav-btn" data-page="syllabus" onclick="showPage('syllabus')">⊞<span class="nav-label">Syllabus</span><span class="tooltip">Syllabus</span></button>
+  <button class="nav-btn" data-page="calc" onclick="showPage('calc')">#<span class="nav-label">Calc</span><span class="tooltip">Calculator</span></button>
+  <button class="nav-btn" data-page="settings" onclick="showPage('settings')">⊙<span class="nav-label">Settings</span><span class="tooltip">Settings</span></button>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ─── TIMER PAGE ─── -->
+  <div class="page active" id="page-timer">
+    <div id="quote-block" onclick="newQuote()" title="Click for a new quote" style="cursor:pointer;margin-bottom:32px;max-width:600px;user-select:none;text-align:center;margin-left:auto;margin-right:auto;">
+      <div id="quote-text" class="page-title" style="font-size:18px;line-height:1.5;transition:opacity .25s;"></div>
+      <div id="quote-author" class="page-sub" style="margin-top:8px;margin-bottom:0;transition:opacity .25s;"></div>
+    </div>
+
+    <div class="countdowns-strip" id="countdowns-strip"></div>
+    <div class="timer-layout">
+      <!-- timer card -->
+      <div class="timer-card">
+        <div class="subject-row" id="subject-chips"></div>
+        <div class="timer-display" id="timer-display">00:00</div>
+        <div class="timer-label" id="timer-status">READY</div>
+        <input class="note-input" id="note-input" placeholder="Add a note about this session…" maxlength="80"/>
+        <div class="timer-btns">
+          <button class="btn btn-primary" id="start-btn" onclick="toggleTimer()">▶ Start</button>
+          <button class="btn btn-save" onclick="stopAndSave()">■ Save</button>
+          <button class="btn btn-ghost" onclick="resetTimer()">↺</button>
+        </div>
+      </div>
+
+      <!-- right panel -->
+      <div class="right-panel">
+        <div class="profile-card">
+          <div class="level-badge">⚡ LV <span id="p-level">1</span></div>
+          <div class="profile-name" id="p-name">Student</div>
+          <div class="streak-row">🔥 <span id="p-streak">0</span>-day streak</div>
+          <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+          <div class="xp-label"><span id="xp-cur">0</span><span id="xp-next">100 XP</span></div>
+        </div>
+
+        <div class="sessions-card">
+          <div class="sessions-title">Today's Sessions</div>
+          <div id="sessions-list"><div class="empty-msg">No sessions yet today</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STATS PAGE ─── -->
+  <div class="page" id="page-stats">
+    <div class="page-title">Statistics</div>
+    <div class="page-sub">Your study analytics</div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value" id="stat-today">0h 0m</div></div>
+      <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value" id="stat-week">0h 0m</div></div>
+      <div class="stat-card"><div class="stat-label">All Time</div><div class="stat-value" id="stat-all">0h 0m</div></div>
+      <div class="stat-card"><div class="stat-label">Total XP</div><div class="stat-value" id="stat-xp">0</div></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Hours per day — last 7 days</div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">By subject</div>
+        <div class="donut-wrap">
+          <svg class="donut-svg" viewBox="0 0 120 120" id="donut-svg"></svg>
+          <div class="donut-legend" id="donut-legend"></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- ─── SETTINGS PAGE ─── -->
+  <div class="page" id="page-settings">
+    <div class="page-title">Settings</div>
+    <div class="page-sub">Customize your experience</div>
+
+    <div class="settings-section">
+      <h3>Profile</h3>
+      <div class="auth-user-row"><span id="settings-user-email"></span><button class="auth-logout" onclick="authSignOut()">Sign out</button></div>
+      <div class="settings-row">
+        <label>Your name</label>
+        <input class="input-field" id="s-name" placeholder="Enter name"/>
+        <button class="btn-small" onclick="saveName()">Save</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Subjects</h3>
+      <div class="settings-row">
+        <label>Subjects</label>
+        <input class="input-field" id="s-subjects" placeholder="Math, Science, English…"/>
+        <button class="btn-small" onclick="saveSubjects()">Save</button>
+      </div>
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:10px;color:var(--muted)">Comma-separated list</div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Countdowns</h3>
+      <div class="countdown-settings-list" id="countdown-settings-list"></div>
+      <div class="countdown-add-row">
+        <input class="input-field" id="cd-name" placeholder="Label (e.g. Exam)" style="width:150px;" maxlength="30"/>
+        <input class="input-field" id="cd-date" type="date" style="color-scheme:dark;width:150px;"/>
+        <button class="btn-small" onclick="addCountdown()">Add</button>
+      </div>
+    </div><div class="settings-section">
+      <h3>Danger Zone</h3>
+      <button class="btn-danger" onclick="resetData()">🗑 Reset All Data</button>
+    </div>
+  </div>
+
+  <!-- ─── CALCULATOR PAGE ─── -->
+  <div class="page" id="page-calc">
+    <div class="page-title">Calculator</div>
+    <div class="page-sub">Click or use keyboard</div>
+
+    <div class="calc-outer">
+      <!-- calc body -->
+      <div class="calc-body">
+        <div class="calc-screen">
+          <div class="calc-expr" id="calc-expr">&nbsp;</div>
+          <div class="calc-result" id="calc-result">0</div>
+        </div>
+        <div class="calc-grid">
+          <button class="calc-btn fn" onclick="calcFn('clear')">AC</button>
+          <button class="calc-btn fn" onclick="calcFn('sign')">+/−</button>
+          <button class="calc-btn fn" onclick="calcFn('pct')">%</button>
+          <button class="calc-btn op" onclick="calcOp('/')">÷</button>
+
+          <button class="calc-btn" onclick="calcNum('7')">7</button>
+          <button class="calc-btn" onclick="calcNum('8')">8</button>
+          <button class="calc-btn" onclick="calcNum('9')">9</button>
+          <button class="calc-btn op" onclick="calcOp('*')">×</button>
+
+          <button class="calc-btn" onclick="calcNum('4')">4</button>
+          <button class="calc-btn" onclick="calcNum('5')">5</button>
+          <button class="calc-btn" onclick="calcNum('6')">6</button>
+          <button class="calc-btn op" onclick="calcOp('-')">−</button>
+
+          <button class="calc-btn" onclick="calcNum('1')">1</button>
+          <button class="calc-btn" onclick="calcNum('2')">2</button>
+          <button class="calc-btn" onclick="calcNum('3')">3</button>
+          <button class="calc-btn op" onclick="calcOp('+')">+</button>
+
+          <button class="calc-btn zero" onclick="calcNum('0')">0</button>
+          <button class="calc-btn" onclick="calcNum('.')">.</button>
+          <button class="calc-btn eq" onclick="calcFn('eq')">=</button>
+        </div>
+      </div>
+
+      <!-- history -->
+      <div class="calc-history">
+        <div class="calc-history-header">
+          <span class="calc-history-title">History</span>
+          <button class="calc-history-clear" onclick="clearCalcHistory()">Clear</button>
+        </div>
+        <div class="calc-history-list" id="calc-history-list">
+          <div class="calc-empty">No calculations yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TODO PAGE ─── -->
+  <div class="page" id="page-todo">
+    <div class="page-title">To-Do</div>
+    <div class="page-sub">Tasks for today</div>
+    <div class="todo-wrap">
+      <div class="todo-input-row">
+        <input class="todo-input" id="todo-input" placeholder="Add a task…" maxlength="120"
+               onkeydown="if(event.key==='Enter') addTodo()"/>
+        <input class="todo-date-input" id="todo-date" type="date" title="Due date (optional)"/>
+        <button class="todo-add-btn" onclick="addTodo()">Add</button>
+      </div>
+      <div class="todo-filters">
+        <button class="todo-filter active" data-filter="all"    onclick="setTodoFilter('all')">All</button>
+        <button class="todo-filter"        data-filter="active" onclick="setTodoFilter('active')">Active</button>
+        <button class="todo-filter"        data-filter="done"   onclick="setTodoFilter('done')">Done</button>
+      </div>
+      <div class="todo-list" id="todo-list"></div>
+      <div class="todo-footer">
+        <span id="todo-count">0 tasks</span>
+        <button class="todo-clear-done" onclick="clearDoneTodos()">Clear completed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── NOTES PAGE ─── -->
+  <div class="page" id="page-notes">
+    <div class="page-title">Notes</div>
+    <div class="page-sub">Your personal notebook</div>
+    <div class="notes-layout">
+      <div class="notes-sidebar">
+        <div class="notes-sidebar-header">
+          <span class="notes-sidebar-title">All Notes</span>
+          <button class="notes-new-btn" onclick="newNote()" title="New note">+</button>
+        </div>
+        <div class="notes-list" id="notes-list-sidebar">
+          <div class="notes-empty-list">No notes yet</div>
+        </div>
+      </div>
+      <div class="notes-editor" id="notes-editor">
+        <div class="notes-empty-state">
+          <p>Select a note or create one</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SYLLABUS PAGE ─── -->
+  <div class="page" id="page-syllabus">
+    <div class="page-title">JEE Mains Syllabus</div>
+    <div class="page-sub">Track your chapter progress</div>
+    <div class="syl-layout">
+      <div class="syl-nav" id="syl-nav"></div>
+      <div class="syl-content" id="syl-content"></div>
+    </div>
+  </div>
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toast-icon">🎉</div>
+  <div class="toast-title" id="toast-title">Session saved!</div>
+  <div class="toast-body" id="toast-body"></div>
+</div>
+
+<script>
+
+// ── SUPABASE ──────────────────────────────────────────────────────────────────
+const SUPA_URL = 'https://txjtibgmpdbidjgkormx.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4anRpYmdtcGRiaWRqZ2tvcm14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODc1NjUsImV4cCI6MjA4ODM2MzU2NX0.4rWM8VDkoeynRVGHlCmOddPiHcfdYwZtF1n1P30JWc8';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentUser = null;
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+let authMode = 'signin'; // 'signin' | 'signup'
+
+function toggleAuthMode() {
+  authMode = authMode === 'signin' ? 'signup' : 'signin';
+  document.getElementById('auth-mode-label').textContent = authMode === 'signin' ? 'Sign in to continue' : 'Create your account';
+  document.getElementById('auth-submit-btn').textContent = authMode === 'signin' ? 'Sign In' : 'Sign Up';
+  document.getElementById('auth-switch-text').innerHTML = authMode === 'signin'
+    ? 'No account? <span onclick="toggleAuthMode()">Sign up</span>'
+    : 'Have an account? <span onclick="toggleAuthMode()">Sign in</span>';
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function authSubmit() {
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const btn      = document.getElementById('auth-submit-btn');
+  const errEl    = document.getElementById('auth-error');
+  if (!email || !password) { errEl.textContent = 'Fill in all fields'; return; }
+  btn.disabled = true; btn.textContent = '...';
+  errEl.textContent = '';
+
+  let error;
+  if (authMode === 'signin') {
+    ({ error } = await supa.auth.signInWithPassword({ email, password }));
+  } else {
+    ({ error } = await supa.auth.signUp({ email, password }));
+  }
+
+  btn.disabled = false;
+  btn.textContent = authMode === 'signin' ? 'Sign In' : 'Sign Up';
+
+  if (error) {
+    errEl.textContent = error.message;
+    return;
+  }
+  if (authMode === 'signup') {
+    errEl.style.color = '#4ade80';
+    errEl.textContent = 'Check your email to confirm, then sign in.';
+    authMode = 'signin';
+    return;
+  }
+}
+
+async function authSignOut() {
+  await supa.auth.signOut();
+  currentUser = null;
+  document.getElementById('auth-overlay').style.display = 'flex';
+}
+
+async function syncSessionsFromSupabase() {
+  if (!currentUser) return;
+  const { data, error } = await supa
+    .from('sessions')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+  if (error || !data) return;
+  // Merge into local D.sessions (avoid duplicates by supa id)
+  const existing = new Set(D.sessions.map(s => s.supa_id).filter(Boolean));
+  data.forEach(row => {
+    if (!existing.has(row.id)) {
+      D.sessions.push({
+        date: row.date,
+        time: '',
+        subject: row.subject,
+        seconds: row.seconds,
+        xp: row.xp,
+        note: row.note || '',
+        supa_id: row.id
+      });
+    }
+  });
+  // Recalculate total XP and seconds from all sessions
+  D.profile.xp = D.sessions.reduce((a,s) => a + s.xp, 0);
+  D.profile.totalSeconds = D.sessions.reduce((a,s) => a + s.seconds, 0);
+  D.profile.level = levelForXP(D.profile.xp);
+  save();
+  refreshProfile();
+  renderSessionsList();
+}
+
+async function saveSessionToSupabase(session) {
+  if (!currentUser) return;
+  const { error } = await supa.from('sessions').insert({
+    user_id: currentUser.id,
+    date:    session.date,
+    subject: session.subject,
+    seconds: session.seconds,
+    xp:      session.xp,
+    note:    session.note || ''
+  });
+  if (error) console.error('Supabase save error:', error.message);
+}
+
+// Listen for auth state changes
+supa.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    currentUser = session.user;
+    document.getElementById('auth-overlay').style.display = 'none';
+    const emailEl = document.getElementById('settings-user-email');
+    if (emailEl) emailEl.textContent = currentUser.email;
+    await syncSessionsFromSupabase();
+  } else {
+    currentUser = null;
+    document.getElementById('auth-overlay').style.display = 'flex';
+  }
+});
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = '9_v1';
+const XP_PER_MIN = 2;
+const LEVEL_XP = [0,100,250,500,900,1400,2100,3000,4200,5800,8000];
+const DONUT_COLORS = ['#fff','#888','#555','#333','#aaa','#666','#444'];
+
+function defaultData() {
+  return {
+    profile: { name:'Student', xp:0, level:1, streak:0, lastDate:null, totalSeconds:0 },
+    sessions: [],
+
+    subjects: ['Math','Science','English','History','Other']
+  };
+}
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultData(); }
+  catch { return defaultData(); }
+}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(D)); }
+
+let D = load();
+let todoFilter = 'all';
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function levelForXP(xp) {
+  let lv = 1;
+  LEVEL_XP.forEach((t,i) => { if (xp >= t) lv = i+1; });
+  return Math.min(lv, LEVEL_XP.length);
+}
+function nextLevelXP(xp) {
+  const lv = levelForXP(xp);
+  return lv < LEVEL_XP.length ? LEVEL_XP[lv] : null;
+}
+function prevLevelXP(xp) {
+  const lv = levelForXP(xp);
+  return LEVEL_XP[lv-1] || 0;
+}
+function fmtTime(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
+  if (h) return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+function fmtHM(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+  return `${h}h ${m}m`;
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function daysAgo(n) {
+  const d = new Date(); d.setDate(d.getDate()-n);
+  return d.toISOString().slice(0,10);
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────────
+// Timer uses wall-clock time so background tabs don't cause drift
+let timerSec = 0, timerRunning = false, timerInterval = null;
+let timerStartedAt = null;   // Date.now() when last started/resumed
+let timerBaseSeconds = 0;    // accumulated seconds before last resume
+let selectedSubject = D.subjects[0];
+
+function getElapsed() {
+  if (!timerRunning || !timerStartedAt) return timerBaseSeconds;
+  return timerBaseSeconds + Math.floor((Date.now() - timerStartedAt) / 1000);
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    // Pause — snapshot elapsed into base
+    timerBaseSeconds = getElapsed();
+    timerStartedAt = null;
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('start-btn').textContent = '▶ Resume';
+    document.getElementById('timer-status').textContent = 'PAUSED';
+    document.getElementById('timer-display').classList.remove('running');
+  } else {
+    timerStartedAt = Date.now();
+    timerRunning = true;
+    document.getElementById('start-btn').textContent = '⏸ Pause';
+    document.getElementById('timer-status').textContent = 'STUDYING';
+    document.getElementById('timer-display').classList.add('running');
+    timerInterval = setInterval(() => {
+      const elapsed = getElapsed();
+      document.getElementById('timer-display').textContent = fmtTime(elapsed);
+    }, 500); // 500ms so it catches up quickly after tab switch
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerBaseSeconds = 0;
+  timerStartedAt = null;
+  timerSec = 0;
+  document.getElementById('timer-display').textContent = '00:00';
+  document.getElementById('timer-display').classList.remove('running');
+  document.getElementById('start-btn').textContent = '▶ Start';
+  document.getElementById('timer-status').textContent = 'READY';
+}
+
+function stopAndSave() {
+  if (getElapsed() < 10) { showToast('⏱','Too short!','Study at least 10 seconds to save.'); return; }
+  clearInterval(timerInterval);
+  timerRunning = false;
+
+  const xp = Math.max(1, Math.floor(timerSec/60*XP_PER_MIN));
+  const note = document.getElementById('note-input').value.trim();
+
+  const session = {
+    date: todayStr(),
+    time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),
+    subject: selectedSubject,
+    seconds: getElapsed(),
+    xp, note
+  };
+  D.sessions.push(session);
+
+  const p = D.profile;
+  p.xp += xp;
+  p.totalSeconds += timerSec;
+  p.level = levelForXP(p.xp);
+
+  const yesterday = daysAgo(1);
+  if (p.lastDate === yesterday) p.streak++;
+  else if (p.lastDate !== todayStr()) p.streak = 1;
+  p.lastDate = todayStr();
+
+  save();
+  saveSessionToSupabase(session);
+  resetTimer();
+  document.getElementById('note-input').value = '';
+  refreshProfile();
+  renderSessionsList();
+
+  showToast('🎉','Session saved!',`+${xp} XP  ·  ${fmtTime(timerSec)}  ·  Streak: ${p.streak} day${p.streak!==1?'s':''} 🔥`);
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showPage(key) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+key).classList.add('active');
+  document.querySelectorAll(`[data-page="${key}"]`).forEach(b => b.classList.add('active'));
+  if (key==='stats') renderStats();
+  if (key==='settings') { loadSettings(); renderCountdownSettings(); }
+  if (key==='notes') initNotes();
+  if (key==='syllabus') initSyllabus();
+}
+
+// ── PROFILE ───────────────────────────────────────────────────────────────────
+function refreshProfile() {
+  const p = D.profile;
+  document.getElementById('p-name').textContent = p.name;
+  document.getElementById('p-level').textContent = p.level;
+  document.getElementById('p-streak').textContent = p.streak;
+
+  const xpCur = p.xp, xpNext = nextLevelXP(p.xp), xpPrev = prevLevelXP(p.xp);
+  const pct = xpNext ? Math.min(100,((xpCur-xpPrev)/(xpNext-xpPrev))*100) : 100;
+  document.getElementById('xp-bar').style.width = pct+'%';
+  document.getElementById('xp-cur').textContent = xpCur+' XP';
+  document.getElementById('xp-next').textContent = xpNext ? xpNext+' XP' : 'MAX';
+  document.getElementById('sb-xp').textContent = xpCur+'\nXP';
+  renderSubjectChips();
+  renderSessionsList();
+}
+
+// ── SUBJECT CHIPS ─────────────────────────────────────────────────────────────
+function renderSubjectChips() {
+  const el = document.getElementById('subject-chips');
+  el.innerHTML = '';
+  D.subjects.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'subj-chip' + (s===selectedSubject?' selected':'');
+    btn.textContent = s;
+    btn.onclick = () => { selectedSubject=s; renderSubjectChips(); };
+    el.appendChild(btn);
+  });
+}
+
+// ── SESSIONS LIST ─────────────────────────────────────────────────────────────
+function renderSessionsList() {
+  const el = document.getElementById('sessions-list');
+  const today = D.sessions.filter(s => s.date === todayStr()).reverse();
+  if (!today.length) { el.innerHTML='<div class="empty-msg">No sessions yet today</div>'; return; }
+  el.innerHTML = today.slice(0,5).map(s => `
+    <div class="session-item">
+      <div class="session-dot"></div>
+      <div class="session-info">
+        <div class="session-subj">${s.subject}</div>
+        ${s.note?`<div class="session-note">${s.note}</div>`:''}
+      </div>
+      <div class="session-meta">
+        <div class="session-dur">${fmtTime(s.seconds)}</div>
+        <div class="session-xp">+${s.xp} XP</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const today = todayStr();
+  const todaySec = D.sessions.filter(s=>s.date===today).reduce((a,s)=>a+s.seconds,0);
+  const weekSec  = D.sessions.filter(s=>s.date>=daysAgo(6)).reduce((a,s)=>a+s.seconds,0);
+  const allSec   = D.sessions.reduce((a,s)=>a+s.seconds,0);
+
+  document.getElementById('stat-today').textContent = fmtHM(todaySec);
+  document.getElementById('stat-week').textContent  = fmtHM(weekSec);
+  document.getElementById('stat-all').textContent   = fmtHM(allSec);
+  document.getElementById('stat-xp').textContent    = D.profile.xp;
+
+  // bar chart
+  const byDay = {};
+  D.sessions.forEach(s => { byDay[s.date] = (byDay[s.date]||0)+s.seconds/3600; });
+  const maxH = Math.max(...Array.from({length:7},(_,i)=>byDay[daysAgo(6-i)]||0), 0.01);
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const barEl = document.getElementById('bar-chart');
+  barEl.innerHTML = '';
+  for (let i=6;i>=0;i--) {
+    const d = daysAgo(i), hrs = byDay[d]||0;
+    const isToday = d===today;
+    const dayName = days[new Date(d+'T12:00:00').getDay()];
+    const pct = Math.round((hrs/maxH)*140);
+    barEl.innerHTML += `
+      <div class="bar-wrap">
+        <div class="bar-val">${hrs>0?hrs.toFixed(1):''}</div>
+        <div class="bar ${isToday?'today':''}" style="height:${pct}px"></div>
+        <div class="bar-day">${isToday?'Today':dayName}</div>
+      </div>`;
+  }
+
+  // donut
+  const bySubj = {};
+  D.sessions.forEach(s=>{ bySubj[s.subject]=(bySubj[s.subject]||0)+s.seconds; });
+  const entries = Object.entries(bySubj).sort((a,b)=>b[1]-a[1]);
+  const total = entries.reduce((a,[,v])=>a+v,0)||1;
+  const svgEl = document.getElementById('donut-svg');
+  const legendEl = document.getElementById('donut-legend');
+
+  if (!entries.length) {
+    svgEl.innerHTML = `<circle cx="60" cy="60" r="45" fill="none" stroke="var(--border)" stroke-width="14"/>`;
+    legendEl.innerHTML = '<div style="font-family:Helvetica,Arial,sans-serif;font-weight:700;text-transform:uppercase;font-size:10px;color:var(--muted)">No data yet</div>';
+    return;
+  }
+
+  let offset = 0;
+  const r = 45, cx = 60, cy = 60, circ = 2*Math.PI*r;
+  svgEl.innerHTML = entries.map(([subj, sec],i) => {
+    const pct = sec/total;
+    const dashLen = pct*circ;
+    const gap = circ - dashLen;
+    const rotation = offset*360 - 90;
+    offset += pct;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+      stroke="${DONUT_COLORS[i%DONUT_COLORS.length]}" stroke-width="14"
+      stroke-dasharray="${dashLen.toFixed(2)} ${gap.toFixed(2)}"
+      transform="rotate(${rotation.toFixed(2)} ${cx} ${cy})"
+      stroke-linecap="round"/>`;
+  }).join('');
+
+  legendEl.innerHTML = entries.map(([subj,sec],i)=>`
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${DONUT_COLORS[i%DONUT_COLORS.length]}"></div>
+      <span class="legend-name">${subj}</span>
+      <span class="legend-pct">${Math.round(sec/total*100)}%</span>
+    </div>`).join('');
+}
+
+
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+function loadSettings() {
+  document.getElementById('s-name').value = D.profile.name;
+  document.getElementById('s-subjects').value = D.subjects.join(', ');
+  const key = localStorage.getItem('9_apikey') || '';
+  document.getElementById('s-apikey').value = key;
+  updateApiKeyStatus();
+}
+
+
+function saveName() {
+  const n = document.getElementById('s-name').value.trim();
+  if (n) { D.profile.name=n; save(); refreshProfile(); showToast('✅','Name updated!',''); }
+}
+function saveSubjects() {
+  const s = document.getElementById('s-subjects').value.split(',').map(x=>x.trim()).filter(Boolean);
+  if (s.length) { D.subjects=s; selectedSubject=s[0]; save(); renderSubjectChips(); showToast('✅','Subjects updated!',''); }
+}
+function resetData() {
+  if (confirm('Delete ALL study data? This cannot be undone.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    D = defaultData(); save(); refreshProfile(); showToast('🗑','Data reset','Starting fresh!');
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(icon, title, body) {
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-body').textContent = body;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+// ── GREETING ──────────────────────────────────────────────────────────────────
+const QUOTES = [
+  {text:"The secret of getting ahead is getting started.", author:"Mark Twain"},
+  {text:"It always seems impossible until it's done.", author:"Nelson Mandela"},
+  {text:"Don't watch the clock; do what it does. Keep going.", author:"Sam Levenson"},
+  {text:"The expert in anything was once a beginner.", author:"Helen Hayes"},
+  {text:"You don't have to be great to start, but you have to start to be great.", author:"Zig Ziglar"},
+  {text:"Study hard what interests you the most in the most undisciplined, irreverent and original manner possible.", author:"Richard Feynman"},
+  {text:"The beautiful thing about learning is that no one can take it away from you.", author:"B.B. King"},
+  {text:"An investment in knowledge pays the best interest.", author:"Benjamin Franklin"},
+  {text:"Live as if you were to die tomorrow. Learn as if you were to live forever.", author:"Mahatma Gandhi"},
+  {text:"The more that you read, the more things you will know.", author:"Dr. Seuss"},
+  {text:"Genius is 1% inspiration and 99% perspiration.", author:"Thomas Edison"},
+  {text:"Success is the sum of small efforts, repeated day in and day out.", author:"Robert Collier"},
+  {text:"Push yourself, because no one else is going to do it for you.", author:"Unknown"},
+  {text:"Great things never come from comfort zones.", author:"Unknown"},
+  {text:"Dream it. Wish it. Do it.", author:"Unknown"},
+  {text:"Wake up with determination. Go to bed with satisfaction.", author:"Unknown"},
+  {text:"Do something today that your future self will thank you for.", author:"Sean Patrick Flanery"},
+  {text:"Little things make big days.", author:"Unknown"},
+  {text:"It's going to be hard, but hard is not impossible.", author:"Unknown"},
+  {text:"Don't stop when you're tired. Stop when you're done.", author:"Unknown"},
+];
+let lastQuoteIdx = -1;
+function newQuote() {
+  let idx;
+  do { idx = Math.floor(Math.random() * QUOTES.length); } while (idx === lastQuoteIdx);
+  lastQuoteIdx = idx;
+  const q = QUOTES[idx];
+  const qt = document.getElementById('quote-text');
+  const qa = document.getElementById('quote-author');
+  qt.style.opacity = '0'; qa.style.opacity = '0';
+  setTimeout(() => {
+    qt.textContent = '\u201C' + q.text + '\u201D';
+    qa.textContent = '— ' + q.author;
+    qt.style.opacity = '1'; qa.style.opacity = '1';
+  }, 220);
+}
+function setGreeting() { newQuote(); }
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+setGreeting();
+refreshProfile();
+renderTodos();
+renderCountdownStrip();
+
+// ── CALCULATOR ────────────────────────────────────────────────────────────────
+let calcCurrent = '0', calcPrev = '', calcOperator = null, calcFresh = false;
+let calcHistoryArr = [];
+
+function calcDisplay() {
+  const res = document.getElementById('calc-result');
+  const expr = document.getElementById('calc-expr');
+  let disp = calcCurrent;
+  // format large numbers nicely
+  const num = parseFloat(calcCurrent);
+  if (!isNaN(num) && !calcCurrent.includes('e')) {
+    if (Math.abs(num) >= 1e12) disp = num.toExponential(4);
+    else if (Number.isInteger(num) && Math.abs(num) < 1e15) disp = num.toLocaleString();
+  }
+  res.textContent = disp;
+  // shrink font if long
+  res.style.fontSize = disp.length > 12 ? '24px' : disp.length > 9 ? '32px' : '42px';
+  if (calcOperator && calcPrev) {
+    const opSymbols = {'+':'+','-':'−','*':'×','/':'÷'};
+    expr.textContent = calcPrev + ' ' + (opSymbols[calcOperator]||calcOperator);
+  } else {
+    expr.textContent = '';
+  }
+}
+
+function calcNum(n) {
+  if (calcFresh) { calcCurrent = '0'; calcFresh = false; }
+  if (n === '.' && calcCurrent.includes('.')) return;
+  if (calcCurrent === '0' && n !== '.') calcCurrent = n;
+  else calcCurrent += n;
+  calcDisplay();
+}
+
+function calcOp(op) {
+  if (calcOperator && !calcFresh) calcFn('eq', true);
+  calcPrev = calcCurrent;
+  calcOperator = op;
+  calcFresh = true;
+  calcDisplay();
+}
+
+function calcFn(fn, silent) {
+  if (fn === 'clear') {
+    calcCurrent = '0'; calcPrev = ''; calcOperator = null; calcFresh = false;
+  } else if (fn === 'sign') {
+    calcCurrent = String(parseFloat(calcCurrent) * -1);
+  } else if (fn === 'pct') {
+    calcCurrent = String(parseFloat(calcCurrent) / 100);
+  } else if (fn === 'eq') {
+    if (!calcOperator || !calcPrev) return;
+    const a = parseFloat(calcPrev), b = parseFloat(calcCurrent);
+    const opSymbols = {'+':'+','-':'−','*':'×','/':'÷'};
+    let result;
+    if (calcOperator === '+') result = a + b;
+    else if (calcOperator === '-') result = a - b;
+    else if (calcOperator === '*') result = a * b;
+    else if (calcOperator === '/') result = b === 0 ? 'Error' : a / b;
+    const exprStr = calcPrev + ' ' + (opSymbols[calcOperator]||calcOperator) + ' ' + calcCurrent;
+    const resultStr = result === 'Error' ? 'Error' : String(+result.toFixed(10));
+    if (!silent) {
+      calcHistoryArr.unshift({ expr: exprStr, result: resultStr });
+      if (calcHistoryArr.length > 20) calcHistoryArr.pop();
+      renderCalcHistory();
+    }
+    calcCurrent = resultStr;
+    calcOperator = null; calcPrev = ''; calcFresh = true;
+  }
+  calcDisplay();
+}
+
+function renderCalcHistory() {
+  const el = document.getElementById('calc-history-list');
+  if (!calcHistoryArr.length) {
+    el.innerHTML = '<div style="font-family:\'Helvetica Neue\',sans-serif;font-size:11px;color:var(--muted);padding:4px 0;">No calculations yet</div>';
+    return;
+  }
+  el.innerHTML = calcHistoryArr.map(h => `
+    <div class="calc-history-item" onclick="calcRecall('${h.result}')">
+      <span>${h.expr}</span>
+      <span class="h-result">= ${h.result}</span>
+    </div>`).join('');
+}
+
+function calcRecall(val) {
+  calcCurrent = val; calcOperator = null; calcPrev = ''; calcFresh = false;
+  calcDisplay();
+}
+
+function clearCalcHistory() {
+  calcHistoryArr = []; renderCalcHistory();
+}
+
+// keyboard support for calculator
+document.addEventListener('keydown', e => {
+  const calcPage = document.getElementById('page-calc');
+  if (!calcPage.classList.contains('active')) return;
+  if ('0123456789.'.includes(e.key)) calcNum(e.key);
+  else if (['+','-','*','/'].includes(e.key)) calcOp(e.key);
+  else if (e.key === 'Enter' || e.key === '=') calcFn('eq');
+  else if (e.key === 'Backspace') {
+    if (calcCurrent.length > 1) calcCurrent = calcCurrent.slice(0,-1);
+    else calcCurrent = '0';
+    calcDisplay();
+  }
+  else if (e.key === 'Escape') calcFn('clear');
+});
+
+
+// ── TO-DO ─────────────────────────────────────────────────────────────────────
+
+function loadTodos() {
+  try { return JSON.parse(localStorage.getItem('9_todos') || '[]'); }
+  catch { return []; }
+}
+function saveTodos(todos) { localStorage.setItem('9_todos', JSON.stringify(todos)); }
+
+function addTodo() {
+  const input = document.getElementById('todo-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const due = document.getElementById('todo-date').value || null;
+  const todos = loadTodos();
+  todos.push({ id: Date.now(), text, done: false, due });
+  saveTodos(todos);
+  input.value = '';
+  document.getElementById('todo-date').value = '';
+  renderTodos();
+}
+
+function formatDue(due) {
+  if (!due) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(due + 'T00:00:00');
+  const diff = Math.round((d - today) / 86400000);
+  if (diff < 0)  return { label: 'Overdue', cls: 'overdue' };
+  if (diff === 0) return { label: 'Today',   cls: 'today' };
+  if (diff === 1) return { label: 'Tomorrow', cls: 'soon' };
+  if (diff <= 7)  return { label: `${diff}d`,  cls: 'soon' };
+  return { label: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), cls: '' };
+}
+
+function toggleTodo(id) {
+  const todos = loadTodos();
+  const t = todos.find(t => t.id === id);
+  if (t) t.done = !t.done;
+  saveTodos(todos);
+  renderTodos();
+}
+
+function deleteTodo(id) {
+  saveTodos(loadTodos().filter(t => t.id !== id));
+  renderTodos();
+}
+
+function clearDoneTodos() {
+  saveTodos(loadTodos().filter(t => !t.done));
+  renderTodos();
+}
+
+function setTodoFilter(f) {
+  todoFilter = f;
+  document.querySelectorAll('.todo-filter').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === f);
+  });
+  renderTodos();
+}
+
+function renderTodos() {
+  const todos = loadTodos();
+  const filtered = todos.filter(t => {
+    if (todoFilter === 'active') return !t.done;
+    if (todoFilter === 'done')   return t.done;
+    return true;
+  });
+  const list = document.getElementById('todo-list');
+  if (!filtered.length) {
+    const msgs = { all: 'Nothing here yet', active: 'All done!', done: 'Nothing completed yet' };
+    list.innerHTML = `<div class="todo-empty">${msgs[todoFilter]}</div>`;
+  } else {
+    list.innerHTML = filtered.map(t => {
+      const due = !t.done && t.due ? formatDue(t.due) : null;
+      return `
+      <div class="todo-item ${t.done ? 'done' : ''}" id="todo-${t.id}">
+        <div class="todo-check" onclick="toggleTodo(${t.id})">${t.done ? '✓' : ''}</div>
+        <span class="todo-text">${t.text}</span>
+        ${due ? `<span class="todo-due ${due.cls}">${due.label}</span>` : ''}
+        <button class="todo-delete" onclick="deleteTodo(${t.id})">✕</button>
+      </div>`;
+    }).join('');
+  }
+  const active = todos.filter(t => !t.done).length;
+  document.getElementById('todo-count').textContent =
+    `${active} task${active !== 1 ? 's' : ''} remaining`;
+}
+
+
+// ── NOTES ─────────────────────────────────────────────────────────────────────
+let activeNoteId = null;
+let notesSaveTimer = null;
+
+function loadNotes() {
+  try { return JSON.parse(localStorage.getItem('9_notes') || '[]'); }
+  catch { return []; }
+}
+function saveNotes(notes) { localStorage.setItem('9_notes', JSON.stringify(notes)); }
+
+function newNote() {
+  const notes = loadNotes();
+  const note = {
+    id: Date.now(),
+    title: '',
+    body: '',
+    updated: new Date().toISOString()
+  };
+  notes.unshift(note);
+  saveNotes(notes);
+  activeNoteId = note.id;
+  renderNotesSidebar();
+  renderNoteEditor(note);
+  setTimeout(() => document.getElementById('note-title-input')?.focus(), 50);
+}
+
+function selectNote(id) {
+  activeNoteId = id;
+  const notes = loadNotes();
+  const note = notes.find(n => n.id === id);
+  if (note) { renderNotesSidebar(); renderNoteEditor(note); }
+}
+
+function deleteNote(id, e) {
+  e.stopPropagation();
+  let notes = loadNotes().filter(n => n.id !== id);
+  saveNotes(notes);
+  if (activeNoteId === id) {
+    activeNoteId = notes[0]?.id || null;
+  }
+  renderNotesSidebar();
+  if (activeNoteId) {
+    const next = notes.find(n => n.id === activeNoteId);
+    if (next) renderNoteEditor(next);
+  } else {
+    document.getElementById('notes-editor').innerHTML = '<div class="notes-empty-state"><p>Select a note or create one</p></div>';
+  }
+}
+
+function updateNote() {
+  clearTimeout(notesSaveTimer);
+  notesSaveTimer = setTimeout(() => {
+    const title = document.getElementById('note-title-input')?.value || '';
+    const body  = document.getElementById('note-body-input')?.value  || '';
+    const notes = loadNotes();
+    const note = notes.find(n => n.id === activeNoteId);
+    if (!note) return;
+    note.title   = title;
+    note.body    = body;
+    note.updated = new Date().toISOString();
+    saveNotes(notes);
+    renderNotesSidebar();
+  }, 400);
+}
+
+function renderNotesSidebar() {
+  const notes = loadNotes();
+  const el = document.getElementById('notes-list-sidebar');
+  if (!notes.length) {
+    el.innerHTML = '<div class="notes-empty-list">No notes yet</div>';
+    return;
+  }
+  el.innerHTML = notes.map(n => {
+    const title   = n.title || 'Untitled';
+    const preview = n.body.replace(/\n/g,' ').slice(0, 60) || '—';
+    const date    = new Date(n.updated).toLocaleDateString(undefined, {month:'short', day:'numeric'});
+    return `<div class="notes-list-item ${n.id === activeNoteId ? 'active' : ''}" onclick="selectNote(${n.id})">
+      <div class="notes-list-item-title">${title}</div>
+      <div class="notes-list-item-preview">${preview}</div>
+      <div class="notes-list-item-date">${date}</div>
+      <button class="notes-list-item-del" onclick="deleteNote(${n.id}, event)">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderNoteEditor(note) {
+  const date = new Date(note.updated).toLocaleString(undefined, {
+    month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
+  });
+  document.getElementById('notes-editor').innerHTML = `
+    <div class="notes-editor-header">
+      <input class="notes-title-input" id="note-title-input"
+             placeholder="Title" value="${note.title.replace(/"/g,'&quot;')}"
+             oninput="updateNote()"/>
+      <div class="notes-meta">Last edited ${date}</div>
+    </div>
+    <textarea class="notes-body-input" id="note-body-input"
+              placeholder="Start writing…"
+              oninput="updateNote()">${note.body}</textarea>`;
+}
+
+function initNotes() {
+  renderNotesSidebar();
+  const notes = loadNotes();
+  if (notes.length) { activeNoteId = notes[0].id; renderNotesSidebar(); renderNoteEditor(notes[0]); }
+}
+
+
+// ── COUNTDOWNS ────────────────────────────────────────────────────────────────
+function loadCountdowns() {
+  try { return JSON.parse(localStorage.getItem('9_countdowns') || '[]'); }
+  catch { return []; }
+}
+function saveCountdowns(cd) { localStorage.setItem('9_countdowns', JSON.stringify(cd)); }
+
+function addCountdown() {
+  const name = document.getElementById('cd-name').value.trim();
+  const date = document.getElementById('cd-date').value;
+  if (!name || !date) return;
+  const cd = loadCountdowns();
+  cd.push({ id: Date.now(), name, date });
+  saveCountdowns(cd);
+  document.getElementById('cd-name').value = '';
+  document.getElementById('cd-date').value = '';
+  renderCountdownSettings();
+  renderCountdownStrip();
+}
+
+function deleteCountdown(id) {
+  saveCountdowns(loadCountdowns().filter(c => c.id !== id));
+  renderCountdownSettings();
+  renderCountdownStrip();
+}
+
+function daysUntil(dateStr) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(dateStr + 'T00:00:00');
+  return Math.round((target - today) / 86400000);
+}
+
+function renderCountdownStrip() {
+  const el = document.getElementById('countdowns-strip');
+  if (!el) return;
+  const cd = loadCountdowns();
+  if (!cd.length) { el.innerHTML = ''; return; }
+  el.innerHTML = cd.map(c => {
+    const days = daysUntil(c.date);
+    const cls = days < 0 ? '' : days === 0 ? 'today' : days <= 7 ? 'urgent' : '';
+    const label = days < 0 ? 'Passed' : days === 0 ? 'Today!' : days === 1 ? '1' : String(days);
+    const unit  = days < 0 ? '' : days === 0 ? '' : 'days';
+    return `<div class="countdown-card">
+      <div class="countdown-label">${c.name}</div>
+      <div class="countdown-days ${cls}">${label}</div>
+      <div class="countdown-unit">${unit}</div>
+      <button class="countdown-del" onclick="deleteCountdown(${c.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderCountdownSettings() {
+  const el = document.getElementById('countdown-settings-list');
+  if (!el) return;
+  const cd = loadCountdowns();
+  if (!cd.length) {
+    el.innerHTML = '<div style="font-family:Helvetica,sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">No countdowns yet</div>';
+    return;
+  }
+  el.innerHTML = cd.map(c => {
+    const days = daysUntil(c.date);
+    const dStr = days < 0 ? 'Passed' : days === 0 ? 'Today' : `${days}d`;
+    return `<div class="countdown-settings-item">
+      <strong style="font-family:Helvetica,sans-serif;font-size:12px;">${c.name}</strong>
+      <span>${c.date} &nbsp;·&nbsp; ${dStr}</span>
+      <button onclick="deleteCountdown(${c.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+
+// ── SYLLABUS ──────────────────────────────────────────────────────────────────
+const JEE_SYLLABUS = {
+  Physics: [
+    'Units & Measurements','Kinematics','Laws of Motion','Work, Energy & Power',
+    'Rotational Motion','Gravitation','Properties of Solids & Liquids',
+    'Thermodynamics','Kinetic Theory of Gases','Oscillations & Waves',
+    'Electrostatics','Current Electricity','Magnetic Effects of Current',
+    'Electromagnetic Induction','Alternating Currents','Electromagnetic Waves',
+    'Optics','Dual Nature of Matter','Atoms & Nuclei','Electronic Devices',
+    'Communication Systems'
+  ],
+  Chemistry: [
+    'Some Basic Concepts of Chemistry','Structure of Atom',
+    'Chemical Bonding & Molecular Structure','States of Matter',
+    'Thermodynamics','Equilibrium','Redox Reactions','Hydrogen',
+    's-Block Elements','p-Block Elements (10+2)','d & f Block Elements',
+    'Coordination Compounds','Environmental Chemistry',
+    'Organic Chemistry: Basic Principles','Hydrocarbons',
+    'Haloalkanes & Haloarenes','Alcohols, Phenols & Ethers',
+    'Aldehydes, Ketones & Carboxylic Acids','Organic Compounds with Nitrogen',
+    'Biomolecules','Polymers','Chemistry in Everyday Life',
+    'Solid State','Solutions','Electrochemistry','Chemical Kinetics',
+    'Surface Chemistry','General Principles of Extraction of Metals',
+    'p-Block Elements (higher)','Nuclear Chemistry'
+  ],
+  Mathematics: [
+    'Sets, Relations & Functions','Complex Numbers & Quadratic Equations',
+    'Matrices & Determinants','Permutations & Combinations',
+    'Mathematical Induction','Binomial Theorem','Sequences & Series',
+    'Limits, Continuity & Differentiability','Integral Calculus',
+    'Differential Equations','Coordinate Geometry: Straight Lines',
+    'Coordinate Geometry: Circles','Coordinate Geometry: Conics',
+    'Three Dimensional Geometry','Vector Algebra','Statistics & Probability',
+    'Trigonometry','Mathematical Reasoning'
+  ]
+};
+
+let activeSylSubject = 'Physics';
+
+function loadSyllabus() {
+  try { return JSON.parse(localStorage.getItem('9_syllabus') || '{}'); }
+  catch { return {}; }
+}
+function saveSyllabus(d) { localStorage.setItem('9_syllabus', JSON.stringify(d)); }
+
+function sylKey(subject, chapter, box) {
+  return subject + '|' + chapter + '|' + box;
+}
+
+function toggleSylCb(subject, chapter, box) {
+  const d = loadSyllabus();
+  const k = sylKey(subject, chapter, box);
+  d[k] = !d[k];
+  // box 3 (50+ PYQ) requires box 2 (20 PYQ) to be checked first
+  // box 4 (mastered) requires box 1,2,3
+  if (box === 3 && d[k]) d[sylKey(subject, chapter, 2)] = true;
+  if (box === 4 && d[k]) {
+    d[sylKey(subject, chapter, 1)] = true;
+    d[sylKey(subject, chapter, 2)] = true;
+    d[sylKey(subject, chapter, 3)] = true;
+  }
+  saveSyllabus(d);
+  renderSyllabus();
+  renderSylNav();
+}
+
+function subjectProgress(subject) {
+  const d = loadSyllabus();
+  const chapters = JEE_SYLLABUS[subject];
+  let mastered = 0, theory = 0, total = chapters.length;
+  chapters.forEach(ch => {
+    if (d[sylKey(subject, ch, 4)]) mastered++;
+    if (d[sylKey(subject, ch, 1)]) theory++;
+  });
+  return { mastered, theory, total };
+}
+
+function renderSylNav() {
+  const el = document.getElementById('syl-nav');
+  if (!el) return;
+  el.innerHTML = Object.keys(JEE_SYLLABUS).map(subj => {
+    const { mastered, total } = subjectProgress(subj);
+    return `<button class="syl-nav-btn ${subj === activeSylSubject ? 'active' : ''}"
+      onclick="activeSylSubject='${subj}';renderSylNav();renderSyllabus()">
+      ${subj}
+      <div class="syl-nav-prog">${mastered}/${total} mastered</div>
+    </button>`;
+  }).join('');
+}
+
+function renderSyllabus() {
+  const el = document.getElementById('syl-content');
+  if (!el) return;
+  const d = loadSyllabus();
+  const subj = activeSylSubject;
+  const chapters = JEE_SYLLABUS[subj];
+  const { mastered, theory, total } = subjectProgress(subj);
+  const pct = Math.round((mastered / total) * 100);
+
+  const cbLabels = ['Theory','20 PYQ','50+ PYQ','Mastered'];
+
+  el.innerHTML = `
+    <div class="syl-subject-title">${subj}</div>
+    <div class="syl-subject-stats">
+      <div>Chapters <span>${total}</span></div>
+      <div>Theory Done <span>${theory}</span></div>
+      <div>Mastered <span>${mastered}</span></div>
+      <div>Progress <span>${pct}%</span></div>
+    </div>
+    <div class="syl-progress-bar"><div class="syl-progress-fill" style="width:${pct}%"></div></div>
+    <div class="syl-col-headers">
+      <div class="syl-col-hdr" style="text-align:left;">Chapter</div>
+      ${cbLabels.map(l => `<div class="syl-col-hdr">${l}</div>`).join('')}
+    </div>
+    ${chapters.map(ch => {
+      const boxes = [1,2,3,4].map(b => {
+        const checked = !!d[sylKey(subj, ch, b)];
+        const cls = b === 4 && checked ? 'checked-4' : checked ? 'checked' : '';
+        return `<div class="syl-cb-wrap">
+          <div class="syl-cb ${cls}" onclick="toggleSylCb('${subj}','${ch.replace(/'/g,"\'")}',${b})">${checked ? '✓' : ''}</div>
+        </div>`;
+      }).join('');
+      const isMastered = !!d[sylKey(subj, ch, 4)];
+      return `<div class="syl-chapter ${isMastered ? 'mastered' : ''}">
+        <div class="syl-chapter-name">${ch}</div>
+        ${boxes}
+      </div>`;
+    }).join('')}
+  `;
+}
+
+function initSyllabus() {
+  renderSylNav();
+  renderSyllabus();
+}
+
+</script>
+
+<!-- AUTH OVERLAY -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-title">Nine</div>
+    <div class="auth-sub" id="auth-mode-label">Sign in to continue</div>
+    <div class="auth-error" id="auth-error"></div>
+    <input class="auth-field" id="auth-email" type="email" placeholder="Email" autocomplete="email"/>
+    <input class="auth-field" id="auth-password" type="password" placeholder="Password" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') authSubmit()"/>
+    <button class="auth-btn" id="auth-submit-btn" onclick="authSubmit()">Sign In</button>
+    <div class="auth-switch" id="auth-switch-text">
+      No account? <span onclick="toggleAuthMode()">Sign up</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
