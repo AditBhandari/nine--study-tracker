@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nine ✦</title>
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#ebebea;--card:#fff;--border:rgba(0,0,0,0.1);--border-md:rgba(0,0,0,0.18);
+  --text:#1a1a1a;--text-2:#555;--text-3:#999;--text-4:#bbb;
+  --accent:#7F77DD;--accent-light:#EEEDFE;
+}
+[data-theme="dark"]{
+  --bg:#111110;--surface:#1c1c1b;--card:#232322;--border:rgba(255,255,255,0.08);--border-md:rgba(255,255,255,0.15);
+  --text:#f0efe9;--text-2:#aaa;--text-3:#666;--text-4:#444;
+  --accent:#7F77DD;--accent-light:#2a2848;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.2s,color 0.2s;}
+.dashboard{display:grid;grid-template-columns:210px 1fr;min-height:100vh;}
+.sidebar{background:var(--surface);border-right:0.5px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo{font-size:15px;font-weight:500;color:var(--text);padding:8px 12px 18px;letter-spacing:-0.3px;display:flex;justify-content:space-between;align-items:center;}
+.theme-btn{background:none;border:0.5px solid var(--border-md);border-radius:6px;cursor:pointer;font-size:13px;padding:3px 7px;color:var(--text-2);font-family:inherit;transition:all 0.15s;}
+.theme-btn:hover{background:var(--card);color:var(--text);}
+.nav-section{font-size:11px;color:var(--text-3);padding:10px 12px 4px;text-transform:uppercase;letter-spacing:0.8px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--text-2);transition:all 0.15s;border:none;background:none;font-family:inherit;width:100%;text-align:left;}
+.nav-item:hover{background:var(--card);color:var(--text);}
+.nav-item.active{background:var(--card);color:var(--text);font-weight:500;border:0.5px solid var(--border-md);}
+.nav-icon{font-size:14px;width:16px;text-align:center;}
+.main{padding:28px 32px;overflow-y:auto;}
+.page{display:none;}.page.active{display:block;}
+.page-title{font-size:22px;font-weight:500;color:var(--text);margin-bottom:24px;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:22px;}
+.stat-card{background:var(--surface);border-radius:8px;padding:14px;}
+.stat-label{font-size:12px;color:var(--text-2);margin-bottom:4px;}
+.stat-value{font-size:24px;font-weight:500;color:var(--text);}
+.stat-sub{font-size:11px;color:var(--text-3);margin-top:3px;}
+.card{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:18px;}
+.section-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:12px;}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);cursor:pointer;}
+.task-item:last-child{border-bottom:none;}
+.task-check{width:15px;height:15px;border-radius:3px;border:1.5px solid var(--border-md);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all 0.15s;}
+.task-check.done{background:#1D9E75;border-color:#1D9E75;color:white;}
+.task-text{font-size:14px;color:var(--text);line-height:1.4;flex:1;}
+.task-text.done{color:var(--text-3);text-decoration:line-through;}
+.tag{font-size:11px;padding:2px 7px;border-radius:20px;flex-shrink:0;}
+.tag-physics{background:#EEEDFE;color:#534AB7;}
+.tag-chemistry{background:#FAEEDA;color:#854F0B;}
+.tag-mathematics{background:#E1F5EE;color:#0F6E56;}
+.tag-life{background:#EAF3DE;color:#3B6D11;}
+[data-theme="dark"] .tag-physics{background:#2a2848;color:#AFA9EC;}
+[data-theme="dark"] .tag-chemistry{background:#2e2410;color:#FAC775;}
+[data-theme="dark"] .tag-mathematics{background:#0e2218;color:#5DCAA5;}
+[data-theme="dark"] .tag-life{background:#162010;color:#97C459;}
+.del-btn{background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-4);padding:2px 4px;border-radius:4px;transition:all 0.15s;flex-shrink:0;line-height:1;font-family:inherit;}
+.del-btn:hover{background:#FCEBEB;color:#A32D2D;}
+[data-theme="dark"] .del-btn:hover{background:#2a1010;color:#F09595;}
+.pill-tabs{display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap;}
+.pill-tab{padding:5px 12px;border-radius:20px;font-size:13px;border:0.5px solid var(--border-md);cursor:pointer;color:var(--text-2);background:transparent;font-family:inherit;transition:all 0.15s;}
+.pill-tab.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+.input-row{display:flex;gap:8px;margin-bottom:10px;}
+.input-row input,.input-row select,input.bare,select.bare{padding:7px 10px;border:0.5px solid var(--border-md);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--card);outline:none;flex:1;}
+.input-row input:focus,.input-row select:focus,input.bare:focus{border-color:var(--accent);}
+.btn{padding:7px 16px;border-radius:8px;border:0.5px solid var(--border-md);background:transparent;cursor:pointer;font-size:13px;color:var(--text);font-family:inherit;transition:all 0.15s;}
+.btn:hover{background:var(--surface);}
+.btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);}
+.btn.primary:hover{opacity:0.85;}
+.habit-row{display:flex;align-items:center;gap:10px;padding:7px 0;}
+.habit-name{font-size:13px;color:var(--text);width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.habit-dots{display:flex;gap:4px;flex:1;}
+.habit-dot{width:20px;height:20px;border-radius:4px;border:0.5px solid var(--border-md);cursor:pointer;transition:all 0.15s;flex-shrink:0;}
+.habit-dot.filled{border:none;}
+.day-lbl{width:20px;text-align:center;font-size:10px;color:var(--text-3);}
+.timer-num{font-size:52px;font-weight:500;color:var(--text);letter-spacing:-2px;font-variant-numeric:tabular-nums;text-align:center;padding:20px 0 6px;}
+.timer-lbl{font-size:13px;color:var(--text-2);text-align:center;}
+.timer-btns{display:flex;justify-content:center;gap:10px;margin-top:18px;}
+.notes-area{width:100%;min-height:110px;border:0.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;color:var(--text);background:var(--card);resize:vertical;outline:none;line-height:1.6;}
+.notes-area:focus{border-color:var(--accent);}
+.quote-card{background:var(--surface);border-radius:12px;padding:18px;margin-bottom:8px;border-left:2px solid var(--accent);border-top-left-radius:0;border-bottom-left-radius:0;}
+.mock-entry{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.mock-entry:last-child{border-bottom:none;}
+.syllabus-subject{margin-bottom:18px;}
+.syllabus-subj-header{font-size:15px;font-weight:500;color:var(--text);padding:10px 0;border-bottom:1px solid var(--border-md);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;}
+.syllabus-subj-header .progress-pct{font-size:12px;color:var(--text-2);font-weight:400;}
+.chapter-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:0.5px solid var(--border);}
+.chapter-row:last-child{border-bottom:none;}
+.chapter-name{font-size:13px;color:var(--text);flex:1;min-width:0;}
+.chapter-checks{display:flex;gap:6px;flex-shrink:0;}
+.check-box{width:22px;height:22px;border-radius:4px;border:1.5px solid var(--border-md);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all 0.15s;flex-shrink:0;}
+.check-box.c1.done{background:#B5D4F4;border-color:#378ADD;color:#0C447C;}
+.check-box.c2.done{background:#FAEEDA;border-color:#EF9F27;color:#633806;}
+.check-box.c3.done{background:#C0DD97;border-color:#639922;color:#27500A;}
+.check-box.c4.done{background:#7F77DD;border-color:#534AB7;color:white;}
+[data-theme="dark"] .check-box.c1.done{background:#0C447C;color:#B5D4F4;}
+[data-theme="dark"] .check-box.c2.done{background:#633806;color:#FAC775;}
+[data-theme="dark"] .check-box.c3.done{background:#27500A;color:#C0DD97;}
+[data-theme="dark"] .check-box.c4.done{background:#3C3489;color:#CECBF6;}
+.check-lbl{font-size:10px;color:var(--text-3);text-align:center;width:22px;}
+.subj-collapsed .chapters-list{display:none;}
+.syllabus-legend{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-2);}
+.legend-dot{width:10px;height:10px;border-radius:2px;}
+.dday-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:22px;}
+.dday-tile{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;}
+.dday-tile-label{font-size:12px;color:var(--text-2);margin-bottom:3px;padding-right:22px;}
+.dday-tile-days{font-size:32px;font-weight:500;letter-spacing:-1.5px;line-height:1;}
+.dday-tile-sub{font-size:11px;color:var(--text-3);margin-top:5px;}
+.dday-tile-del{position:absolute;top:9px;right:9px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-4);padding:1px 4px;border-radius:4px;transition:all 0.15s;font-family:inherit;line-height:1;}
+.dday-tile-del:hover{background:#FCEBEB;color:#A32D2D;}
+[data-theme="dark"] .dday-tile-del:hover{background:#2a1010;color:#F09595;}
+.add-dday-inline{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-3);cursor:pointer;padding:4px 0;margin-bottom:18px;width:fit-content;transition:color 0.15s;}
+.add-dday-inline:hover{color:var(--text);}
+.dday-add-form{background:var(--card);border:0.5px solid var(--border-md);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+.two-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+
+/* ── Mobile ── */
+@media(max-width:640px){
+  .dashboard{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;}
+  .sidebar{display:none;}
+  .main{padding:16px 16px 80px;overflow-y:auto;}
+  .page-title{font-size:19px;margin-bottom:18px;}
+  .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:16px;}
+  .stat-value{font-size:20px;}
+  .two-col{grid-template-columns:1fr;}
+  .dday-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .dday-tile-days{font-size:26px;}
+  .card{padding:14px;}
+  .timer-num{font-size:42px;}
+  .input-row{flex-wrap:wrap;}
+  .input-row input[style*="flex:2"]{flex:1 1 100%;}
+  .habit-name{width:80px;font-size:12px;}
+  .habit-dot{width:16px;height:16px;}
+  .day-lbl{width:16px;font-size:9px;}
+  .chapter-name{font-size:12px;}
+  .check-box{width:20px;height:20px;font-size:9px;}
+  .check-lbl{width:20px;font-size:9px;}
+  .dday-add-form > div[style*="display:flex;gap:8px"]{flex-direction:column;}
+
+  /* bottom nav bar */
+  .mobile-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    background:var(--card);border-top:0.5px solid var(--border);
+    z-index:100;
+  }
+  .mobile-nav-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:8px 4px 10px;gap:3px;border:none;background:none;cursor:pointer;
+    font-family:inherit;color:var(--text-3);transition:color 0.15s;
+    font-size:9px;letter-spacing:0.3px;
+  }
+  .mobile-nav-item .mn-icon{font-size:18px;line-height:1;}
+  .mobile-nav-item.active{color:var(--accent);}
+
+  /* mobile header bar */
+  .mobile-header{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--surface);border-bottom:0.5px solid var(--border);
+    padding:12px 16px;
+    position:sticky;top:0;z-index:99;
+  }
+  .mobile-header-logo{font-size:15px;font-weight:500;color:var(--text);letter-spacing:-0.3px;}
+}
+@media(min-width:641px){
+  .mobile-nav{display:none;}
+  .mobile-header{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="mobile-header">
+  <span class="mobile-header-logo">Nine ✦</span>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn-mobile">☽</button>
+</div>
+
+<div class="dashboard">
+<div class="sidebar">
+  <div class="logo">Nine ✦ <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">☽</button></div>
+  <div class="nav-section">Study</div>
+  <button class="nav-item active" onclick="nav('home',this)"><span class="nav-icon">⌂</span> Dashboard</button>
+  <button class="nav-item" onclick="nav('tasks',this)"><span class="nav-icon">✓</span> Tasks</button>
+  <button class="nav-item" onclick="nav('pomodoro',this)"><span class="nav-icon">◎</span> Focus Timer</button>
+  <button class="nav-item" onclick="nav('notes',this)"><span class="nav-icon">≡</span> Notes</button>
+  <div class="nav-section">Prep</div>
+  <button class="nav-item" onclick="nav('habits',this)"><span class="nav-icon">◈</span> Habits</button>
+  <button class="nav-item" onclick="nav('jee',this)"><span class="nav-icon">◇</span> JEE Tracker</button>
+  <button class="nav-item" onclick="nav('syllabus',this)"><span class="nav-icon">▦</span> Syllabus</button>
+</div>
+
+<div class="main">
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="page-title">Good morning, Adit.</div>
+  <div id="dday-grid" class="dday-grid"></div>
+  <div class="add-dday-inline" onclick="toggleDDayForm()" id="add-dday-btn">+ add countdown</div>
+  <div id="dday-form-wrap" style="display:none;">
+    <div class="dday-add-form">
+      <div class="section-title" style="margin-bottom:10px;">New countdown</div>
+      <input type="text" id="dday-new-label" class="bare" placeholder="Label (e.g. Board Exams)" style="width:100%;margin-bottom:8px;">
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <div style="flex:1;"><div style="font-size:12px;color:var(--text-2);margin-bottom:4px;">Target date</div><input type="date" id="dday-new-date" class="bare" style="width:100%;"></div>
+        <div style="flex:1;"><div style="font-size:12px;color:var(--text-2);margin-bottom:4px;">Prep start (optional)</div><input type="date" id="dday-new-start" class="bare" style="width:100%;"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn primary" onclick="saveDDay()" style="flex:1;">Save</button>
+        <button class="btn" onclick="toggleDDayForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Study today</div><div class="stat-value" id="h-focus">0h</div><div class="stat-sub">goal: 8h</div></div>
+    <div class="stat-card"><div class="stat-label">Tasks done</div><div class="stat-value" id="h-tasks">0</div><div class="stat-sub" id="h-tasks-of">of 0</div></div>
+    <div class="stat-card"><div class="stat-label">Chapters mastered</div><div class="stat-value" id="h-mastered">0</div><div class="stat-sub" id="h-mastered-of">of 0</div></div>
+    <div class="stat-card"><div class="stat-label">Streak</div><div class="stat-value">7</div><div class="stat-sub">days</div></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Pending tasks</div>
+    <div id="h-task-preview"></div>
+    <button class="btn" style="font-size:12px;padding:5px 0;border:none;color:var(--text-3);" onclick="nav('tasks',null)">View all →</button>
+  </div>
+  <div class="quote-card">
+    <div style="font-size:14px;color:var(--text);line-height:1.6;font-style:italic;" id="h-quote">—</div>
+    <div style="font-size:12px;color:var(--text-3);margin-top:6px;" id="h-author"></div>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div class="page" id="page-tasks">
+  <div class="page-title">Tasks</div>
+  <div class="pill-tabs">
+    <button class="pill-tab active" onclick="filterTasks('all',this)">All</button>
+    <button class="pill-tab" onclick="filterTasks('Physics',this)">Physics</button>
+    <button class="pill-tab" onclick="filterTasks('Chemistry',this)">Chemistry</button>
+    <button class="pill-tab" onclick="filterTasks('Mathematics',this)">Mathematics</button>
+    <button class="pill-tab" onclick="filterTasks('Life',this)">Life</button>
+  </div>
+  <div class="card">
+    <div class="input-row">
+      <input type="text" id="task-input" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTask()">
+      <select id="task-tag"><option>Physics</option><option>Chemistry</option><option>Mathematics</option><option>Life</option></select>
+      <button class="btn primary" onclick="addTask()">Add</button>
+    </div>
+    <div id="task-list"></div>
+  </div>
+</div>
+
+<!-- POMODORO -->
+<div class="page" id="page-pomodoro">
+  <div class="page-title">Focus Timer</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="pill-tabs">
+        <button class="pill-tab active" onclick="setMode('pomodoro',this)">Pomodoro</button>
+        <button class="pill-tab" onclick="setMode('short',this)">Short break</button>
+        <button class="pill-tab" onclick="setMode('long',this)">Long break</button>
+      </div>
+      <div class="timer-num" id="timer-display">25:00</div>
+      <div class="timer-lbl" id="timer-label">Focus session</div>
+      <div class="timer-btns">
+        <button class="btn primary" id="timer-start-btn" onclick="toggleTimer()">Start</button>
+        <button class="btn" onclick="resetTimer()">Reset</button>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <select id="timer-subject" class="bare" style="flex:none;width:auto;">
+          <option>Physics</option><option>Chemistry</option><option>Mathematics</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Today's sessions</div>
+      <div id="session-log-list"><div style="font-size:13px;color:var(--text-3);padding:10px 0;">No sessions yet.</div></div>
+      <div style="margin-top:14px;border-top:0.5px solid var(--border);padding-top:12px;">
+        <div class="stat-label">Total focus today</div>
+        <div style="font-size:20px;font-weight:500;color:var(--text);" id="total-focus-time">0 min</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="page" id="page-notes">
+  <div class="page-title">Notes</div>
+  <div class="input-row">
+    <input type="text" id="note-title-input" placeholder="Note title..." style="flex:2;">
+    <select id="note-subject"><option>Physics</option><option>Chemistry</option><option>Mathematics</option><option>General</option></select>
+    <button class="btn primary" onclick="addNote()">Save</button>
+  </div>
+  <textarea class="notes-area" id="note-body-input" placeholder="Write your note here..."></textarea>
+  <div id="notes-list" style="margin-top:18px;"></div>
+</div>
+
+<!-- HABITS -->
+<div class="page" id="page-habits">
+  <div class="page-title">Habits</div>
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-title" style="margin-bottom:14px;">This week</div>
+    <div style="display:flex;gap:4px;margin-bottom:6px;margin-left:122px;" id="day-labels-row"></div>
+    <div id="habit-grid"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Add habit</div>
+    <div class="input-row" style="margin-top:8px;">
+      <input type="text" id="habit-input" placeholder="New habit..." onkeydown="if(event.key==='Enter')addHabit()">
+      <button class="btn primary" onclick="addHabit()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- JEE TRACKER -->
+<div class="page" id="page-jee">
+  <div class="page-title">JEE Tracker</div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Days left</div><div class="stat-value" id="jee-days">—</div><div class="stat-sub">to JEE Mains</div></div>
+    <div class="stat-card"><div class="stat-label">Mocks done</div><div class="stat-value" id="mock-count">0</div><div class="stat-sub">target: 40</div></div>
+    <div class="stat-card"><div class="stat-label">Avg score</div><div class="stat-value" id="avg-score">—</div><div class="stat-sub" id="avg-score-denom">out of —</div></div>
+    <div class="stat-card"><div class="stat-label">Best score</div><div class="stat-value" id="best-score">—</div><div class="stat-sub" id="best-score-denom">out of —</div></div>
+  </div>
+
+  <div class="two-col">
+    <!-- LOG FORM -->
+    <div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="section-title" style="margin-bottom:0;">Log mock test</div>
+          <select id="mock-template-select" class="bare" style="flex:none;font-size:12px;max-width:160px;" onchange="onTemplateChange()">
+          </select>
+        </div>
+        <div id="mock-score-inputs" style="display:grid;gap:8px;"></div>
+        <div style="display:grid;gap:8px;margin-top:8px;">
+          <input type="text" id="mock-name-input" class="bare" placeholder="Test name (optional)" style="width:100%;">
+          <input type="text" id="mock-date" class="bare" placeholder="Date (e.g. 15 Mar)" style="width:100%;">
+          <button class="btn primary" onclick="logMock()" style="width:100%;">Save result</button>
+        </div>
+      </div>
+
+      <!-- TEMPLATE MANAGER -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="section-title" style="margin-bottom:0;">Test templates</div>
+          <button class="btn" style="font-size:12px;padding:4px 10px;" onclick="startNewTemplate()">+ New</button>
+        </div>
+        <div id="template-list"></div>
+        <div id="template-editor" style="display:none;margin-top:12px;border-top:0.5px solid var(--border);padding-top:12px;">
+          <div style="display:grid;gap:8px;">
+            <input type="text" id="tmpl-name" class="bare" placeholder="Template name (e.g. CET Full)" style="width:100%;">
+            <div id="tmpl-subjects-list" style="display:grid;gap:6px;"></div>
+            <button class="btn" style="font-size:12px;width:fit-content;" onclick="addTemplateSubject()">+ Add subject</button>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button class="btn primary" onclick="saveTemplate()" style="flex:1;">Save template</button>
+              <button class="btn" onclick="cancelTemplate()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card" style="align-self:start;">
+      <div class="section-title">Results</div>
+      <div id="mock-list"><div style="font-size:13px;color:var(--text-3);padding:10px 0;">No tests logged yet.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SYLLABUS -->
+<div class="page" id="page-syllabus">
+  <div class="page-title">JEE Mains Syllabus</div>
+  <div class="syllabus-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#B5D4F4;border:1px solid #378ADD;"></div> Theory</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FAEEDA;border:1px solid #EF9F27;"></div> CET PYQs</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#C0DD97;border:1px solid #639922;"></div> JEE PYQs</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7F77DD;"></div> Mastered</div>
+  </div>
+  <div class="pill-tabs" id="syllabus-tabs">
+    <button class="pill-tab active" onclick="switchSyllabus('physics',this)">Physics</button>
+    <button class="pill-tab" onclick="switchSyllabus('chemistry',this)">Chemistry</button>
+    <button class="pill-tab" onclick="switchSyllabus('mathematics',this)">Mathematics</button>
+  </div>
+  <div id="syllabus-progress-bar" style="margin-bottom:16px;"></div>
+  <div id="syllabus-content"></div>
+</div>
+
+</div>
+</div>
+
+<nav class="mobile-nav" id="mobile-nav">
+  <button class="mobile-nav-item active" onclick="mobileNav('home',this)"><span class="mn-icon">⌂</span>Home</button>
+  <button class="mobile-nav-item" onclick="mobileNav('tasks',this)"><span class="mn-icon">✓</span>Tasks</button>
+  <button class="mobile-nav-item" onclick="mobileNav('pomodoro',this)"><span class="mn-icon">◎</span>Timer</button>
+  <button class="mobile-nav-item" onclick="mobileNav('syllabus',this)"><span class="mn-icon">▦</span>Syllabus</button>
+  <button class="mobile-nav-item" id="more-btn" onclick="toggleMoreDrawer()"><span class="mn-icon">≡</span>More</button>
+</nav>
+
+<div id="more-drawer" style="display:none;position:fixed;bottom:61px;left:0;right:0;background:var(--card);border-top:0.5px solid var(--border);z-index:99;padding:14px 16px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <button class="btn" style="display:flex;align-items:center;gap:8px;font-size:14px;" onclick="mobileNav('notes',null);closeMoreDrawer()"><span>≡</span> Notes</button>
+    <button class="btn" style="display:flex;align-items:center;gap:8px;font-size:14px;" onclick="mobileNav('habits',null);closeMoreDrawer()"><span>◈</span> Habits</button>
+    <button class="btn" style="display:flex;align-items:center;gap:8px;font-size:14px;" onclick="mobileNav('jee',null);closeMoreDrawer()"><span>◇</span> JEE Tracker</button>
+  </div>
+</div>
+<script>
+var tasks=[
+  {id:1,text:'Solve 30 questions — Rotational Motion',tag:'Physics',done:false},
+  {id:2,text:'Revise Organic Reaction Mechanisms',tag:'Chemistry',done:false},
+  {id:3,text:'Practice Integration by parts',tag:'Mathematics',done:true},
+  {id:4,text:'Evening run — 5km',tag:'Life',done:false},
+];
+var notes=[],habits=['Morning revision','Evening run','No phone before study','Sleep by 11pm'],habitData={};
+var timerInterval=null,timerRunning=false,timerSeconds=25*60,timerMode='pomodoro';
+var timerModes={pomodoro:25*60,short:5*60,long:15*60};
+var sessions=[],totalFocusMin=0,mockTests=[],taskFilter='all',syllabusState={},currentSyllabusSubject='physics';
+var DDAY_COLORS=['#7F77DD','#1D9E75','#D85A30','#378ADD','#BA7517','#D4537E'];
+var ddayTimers=[
+  {id:1,label:'JEE Mains 2026',date:'2026-01-20',startDate:'2024-07-01'},
+  {id:2,label:'JEE Advanced 2026',date:'2026-05-24',startDate:'2026-01-21'},
+];
+var ddayFormVisible=false;
+var quotes=[
+  {t:"The secret of getting ahead is getting started.",a:"Mark Twain"},
+  {t:"Hard work beats talent when talent doesn't work hard.",a:"Tim Notke"},
+  {t:"Don't watch the clock; do what it does. Keep going.",a:"Sam Levenson"},
+  {t:"You don't have to be great to start, but you have to start to be great.",a:"Zig Ziglar"},
+  {t:"Success is the sum of small efforts, repeated day in and day out.",a:"Robert Collier"},
+  {t:"Excellence is never an accident.",a:"Aristotle"},
+  {t:"The pain of discipline weighs ounces; the pain of regret weighs tons.",a:"Jim Rohn"},
+];
+var SYLLABUS={
+  physics:[
+    {name:'Class 11',chapters:[
+      'Units and Measurements',
+      'Motion in a Straight Line',
+      'Motion in a Plane',
+      'Laws of Motion',
+      'Work, Energy and Power',
+      'System of Particles and Rotational Motion',
+      'Gravitation',
+      'Mechanical Properties of Solids',
+      'Mechanical Properties of Fluids',
+      'Thermal Properties of Matter',
+      'Thermodynamics',
+      'Kinetic Theory',
+      'Oscillations',
+      'Waves',
+    ]},
+    {name:'Class 12',chapters:[
+      'Electric Charges and Fields',
+      'Electrostatic Potential and Capacitance',
+      'Current Electricity',
+      'Moving Charges and Magnetism',
+      'Magnetism and Matter',
+      'Electromagnetic Induction',
+      'Alternating Current',
+      'Electromagnetic Waves',
+      'Ray Optics and Optical Instruments',
+      'Wave Optics',
+      'Dual Nature of Radiation and Matter',
+      'Atoms',
+      'Nuclei',
+      'Semiconductor Electronics',
+    ]},
+  ],
+  chemistry:[
+    {name:'Class 11 — Physical',chapters:[
+      'Some Basic Concepts of Chemistry',
+      'Structure of Atom',
+      'Chemical Thermodynamics',
+      'Equilibrium',
+      'Redox Reactions',
+    ]},
+    {name:'Class 11 — Inorganic',chapters:[
+      'Classification of Elements and Periodicity',
+      'Chemical Bonding and Molecular Structure',
+      'Hydrogen',
+      'The s-Block Elements',
+      'Some p-Block Elements',
+    ]},
+    {name:'Class 11 — Organic',chapters:[
+      'Organic Chemistry – Basic Principles and Techniques',
+      'Hydrocarbons',
+      'Environmental Chemistry',
+    ]},
+    {name:'Class 12 — Physical',chapters:[
+      'Solutions',
+      'Electrochemistry',
+      'Chemical Kinetics',
+      'Surface Chemistry',
+    ]},
+    {name:'Class 12 — Inorganic',chapters:[
+      'The p-Block Elements',
+      'The d- and f-Block Elements',
+      'Coordination Compounds',
+    ]},
+    {name:'Class 12 — Organic',chapters:[
+      'Haloalkanes and Haloarenes',
+      'Alcohols, Phenols and Ethers',
+      'Aldehydes, Ketones and Carboxylic Acids',
+      'Amines',
+      'Biomolecules',
+      'Polymers',
+      'Chemistry in Everyday Life',
+    ]},
+  ],
+  mathematics:[
+    {name:'Class 11',chapters:[
+      'Sets',
+      'Relations and Functions',
+      'Trigonometric Functions',
+      'Principle of Mathematical Induction',
+      'Complex Numbers and Quadratic Equations',
+      'Linear Inequalities',
+      'Permutations and Combinations',
+      'Binomial Theorem',
+      'Sequences and Series',
+      'Straight Lines',
+      'Conic Sections',
+      'Introduction to 3D Geometry',
+      'Limits and Derivatives',
+      'Mathematical Reasoning',
+      'Statistics',
+      'Probability',
+    ]},
+    {name:'Class 12',chapters:[
+      'Relations and Functions',
+      'Inverse Trigonometric Functions',
+      'Matrices',
+      'Determinants',
+      'Continuity and Differentiability',
+      'Applications of Derivatives',
+      'Integrals',
+      'Applications of Integrals',
+      'Differential Equations',
+      'Vector Algebra',
+      'Three-Dimensional Geometry',
+      'Linear Programming',
+      'Probability',
+    ]},
+  ],
+};
+
+function toggleTheme(){
+  var html=document.documentElement;
+  var isDark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',isDark?'light':'dark');
+  var icon=isDark?'☽':'☀';
+  document.getElementById('theme-btn').textContent=icon;
+  var mb=document.getElementById('theme-btn-mobile');
+  if(mb)mb.textContent=icon;
+}
+
+function mobileNav(id,el){
+  nav(id,null);
+  document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  closeMoreDrawer();
+}
+
+function toggleMoreDrawer(){
+  var d=document.getElementById('more-drawer');
+  d.style.display=d.style.display==='none'?'block':'none';
+}
+function closeMoreDrawer(){
+  document.getElementById('more-drawer').style.display='none';
+}
+
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  else document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
+  if(id==='home')renderHome();
+  if(id==='tasks')renderTasks();
+  if(id==='habits')renderHabits();
+  if(id==='notes')renderNotes();
+  if(id==='jee'){renderJEE();renderTemplateSelect();renderTemplateList();}
+  if(id==='syllabus')renderSyllabus();
+}
+
+function daysTo(ds){var d=new Date(ds+'T00:00:00'),now=new Date();return Math.max(0,Math.ceil((d-now)/86400000));}
+
+function renderDDayGrid(){
+  var grid=document.getElementById('dday-grid');
+  var html='';
+  ddayTimers.forEach(function(t,i){
+    var d=daysTo(t.date);
+    var color=DDAY_COLORS[i%DDAY_COLORS.length];
+    var pct=0;
+    if(t.startDate){
+      var s=new Date(t.startDate+'T00:00:00'),e=new Date(t.date+'T00:00:00'),now=new Date();
+      pct=Math.round(Math.min(100,Math.max(0,(now-s)/(e-s)*100)));
+    }
+    html+='<div class="dday-tile">'+
+      '<button class="dday-tile-del" onclick="deleteDDay('+t.id+')">×</button>'+
+      '<div class="dday-tile-label">'+esc(t.label)+'</div>'+
+      '<div class="dday-tile-days" style="color:'+color+'">'+d+'<span style="font-size:13px;font-weight:400;color:var(--text-3);margin-left:3px;">days</span></div>'+
+      '<div style="margin-top:8px;height:3px;background:var(--surface);border-radius:2px;overflow:hidden;"><div style="height:100%;background:'+color+';width:'+pct+'%;border-radius:2px;"></div></div>'+
+      '<div class="dday-tile-sub">'+new Date(t.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+' · '+pct+'% elapsed</div>'+
+    '</div>';
+  });
+  grid.innerHTML=html;
+}
+
+function toggleDDayForm(){
+  ddayFormVisible=!ddayFormVisible;
+  document.getElementById('dday-form-wrap').style.display=ddayFormVisible?'block':'none';
+  document.getElementById('add-dday-btn').textContent=ddayFormVisible?'− cancel':'+ add countdown';
+  if(ddayFormVisible)document.getElementById('dday-new-label').focus();
+}
+
+function saveDDay(){
+  var label=document.getElementById('dday-new-label').value.trim();
+  var date=document.getElementById('dday-new-date').value;
+  var start=document.getElementById('dday-new-start').value;
+  if(!label||!date)return;
+  ddayTimers.push({id:Date.now(),label:label,date:date,startDate:start||null});
+  document.getElementById('dday-new-label').value='';
+  document.getElementById('dday-new-date').value='';
+  document.getElementById('dday-new-start').value='';
+  ddayFormVisible=false;
+  document.getElementById('dday-form-wrap').style.display='none';
+  document.getElementById('add-dday-btn').textContent='+ add countdown';
+  renderDDayGrid();
+}
+
+function deleteDDay(id){ddayTimers=ddayTimers.filter(t=>t.id!==id);renderDDayGrid();}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderHome(){
+  renderDDayGrid();
+  document.getElementById('h-focus').textContent=Math.round(totalFocusMin/60*10)/10+'h';
+  var done=tasks.filter(t=>t.done).length;
+  document.getElementById('h-tasks').textContent=done;
+  document.getElementById('h-tasks-of').textContent='of '+tasks.length;
+  var allChaps=[];
+  Object.keys(SYLLABUS).forEach(s=>SYLLABUS[s].forEach(g=>g.chapters.forEach(c=>allChaps.push(s+'|'+g.name+'|'+c))));
+  var mastered=allChaps.filter(k=>syllabusState[k+'_3']).length;
+  document.getElementById('h-mastered').textContent=mastered;
+  document.getElementById('h-mastered-of').textContent='of '+allChaps.length;
+  var pending=tasks.filter(t=>!t.done).slice(0,3);
+  document.getElementById('h-task-preview').innerHTML=pending.length
+    ?pending.map(t=>'<div class="task-item" onclick="toggleTask('+t.id+');renderHome()"><div class="task-check '+(t.done?'done':'')+'">'+( t.done?'✓':'')+'</div><div class="task-text">'+t.text+'</div><span class="tag tag-'+t.tag.toLowerCase()+'">'+t.tag+'</span></div>').join('')
+    :'<div style="font-size:13px;color:var(--text-3);padding:8px 0;">All done.</div>';
+  var q=quotes[Math.floor(Date.now()/86400000)%quotes.length];
+  document.getElementById('h-quote').textContent='"'+q.t+'"';
+  document.getElementById('h-author').textContent='— '+q.a;
+}
+
+function renderTasks(){
+  var f=taskFilter==='all'?tasks:tasks.filter(t=>t.tag===taskFilter);
+  document.getElementById('task-list').innerHTML=f.length
+    ?f.map(t=>'<div class="task-item"><div class="task-check '+(t.done?'done':'')+'" onclick="toggleTask('+t.id+');renderTasks()">'+( t.done?'✓':'')+'</div><div class="task-text '+(t.done?'done':'')+'" onclick="toggleTask('+t.id+');renderTasks()" style="cursor:pointer;">'+t.text+'</div><span class="tag tag-'+t.tag.toLowerCase()+'">'+t.tag+'</span><button class="del-btn" onclick="deleteTask('+t.id+')" title="Delete">×</button></div>').join('')
+    :'<div style="font-size:13px;color:var(--text-3);padding:10px 0;">No tasks.</div>';
+}
+
+function filterTasks(tag,el){
+  taskFilter=tag;
+  document.querySelectorAll('#page-tasks .pill-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');renderTasks();
+}
+
+function addTask(){
+  var inp=document.getElementById('task-input'),tag=document.getElementById('task-tag').value;
+  if(!inp.value.trim())return;
+  tasks.unshift({id:Date.now(),text:inp.value.trim(),tag:tag,done:false});
+  inp.value='';renderTasks();
+}
+
+function toggleTask(id){var t=tasks.find(t=>t.id===id);if(t)t.done=!t.done;}
+function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);renderTasks();}
+
+function setMode(mode,el){
+  timerMode=mode;clearInterval(timerInterval);timerRunning=false;
+  timerSeconds=timerModes[mode];
+  document.getElementById('timer-start-btn').textContent='Start';
+  document.getElementById('timer-display').textContent=fmt(timerSeconds);
+  document.getElementById('timer-label').textContent={pomodoro:'Focus session',short:'Short break',long:'Long break'}[mode];
+  document.querySelectorAll('#page-pomodoro .pill-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleTimer(){
+  if(timerRunning){
+    clearInterval(timerInterval);timerRunning=false;
+    document.getElementById('timer-start-btn').textContent='Resume';
+  } else {
+    timerRunning=true;document.getElementById('timer-start-btn').textContent='Pause';
+    timerInterval=setInterval(function(){
+      timerSeconds--;
+      document.getElementById('timer-display').textContent=fmt(timerSeconds);
+      if(timerSeconds<=0){
+        clearInterval(timerInterval);timerRunning=false;
+        document.getElementById('timer-start-btn').textContent='Start';
+        if(timerMode==='pomodoro'){
+          var sub=document.getElementById('timer-subject').value,mins=timerModes.pomodoro/60;
+          sessions.unshift({subject:sub,mins:mins,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+          totalFocusMin+=mins;renderSessions();
+        }
+        timerSeconds=timerModes[timerMode];
+        document.getElementById('timer-display').textContent=fmt(timerSeconds);
+      }
+    },1000);
+  }
+}
+
+function resetTimer(){
+  clearInterval(timerInterval);timerRunning=false;timerSeconds=timerModes[timerMode];
+  document.getElementById('timer-display').textContent=fmt(timerSeconds);
+  document.getElementById('timer-start-btn').textContent='Start';
+}
+
+function renderSessions(){
+  var log=document.getElementById('session-log-list');
+  if(!sessions.length){log.innerHTML='<div style="font-size:13px;color:var(--text-3);padding:10px 0;">No sessions yet.</div>';return;}
+  log.innerHTML=sessions.slice(0,5).map(s=>'<div class="mock-entry"><span>'+s.subject+'</span><span style="color:var(--text-2);">'+s.mins+' min · '+s.time+'</span></div>').join('');
+  document.getElementById('total-focus-time').textContent=totalFocusMin+' min';
+}
+
+function fmt(s){return Math.floor(s/60).toString().padStart(2,'0')+':'+(s%60).toString().padStart(2,'0');}
+
+function addNote(){
+  var t=document.getElementById('note-title-input').value.trim();
+  var b=document.getElementById('note-body-input').value.trim();
+  var s=document.getElementById('note-subject').value;
+  if(!t)return;
+  notes.unshift({id:Date.now(),title:t,body:b,subject:s,date:new Date().toLocaleDateString()});
+  document.getElementById('note-title-input').value='';document.getElementById('note-body-input').value='';
+  renderNotes();
+}
+
+function renderNotes(){
+  var l=document.getElementById('notes-list');
+  if(!notes.length){l.innerHTML='<div style="font-size:13px;color:var(--text-3);padding:10px 0;">No notes yet.</div>';return;}
+  l.innerHTML=notes.map(n=>{
+    if(n.editing){
+      return '<div class="card" id="note-edit-'+n.id+'">'+
+        '<div class="input-row" style="margin-bottom:8px;">'+
+          '<input type="text" id="nedit-title-'+n.id+'" value="'+esc(n.title)+'" style="flex:2;">'+
+          '<select id="nedit-subj-'+n.id+'">'+['Physics','Chemistry','Mathematics','General'].map(s=>'<option'+(n.subject===s?' selected':'')+'>'+s+'</option>').join('')+'</select>'+
+        '</div>'+
+        '<textarea id="nedit-body-'+n.id+'" class="notes-area" style="min-height:80px;">'+esc(n.body)+'</textarea>'+
+        '<div style="display:flex;gap:8px;margin-top:10px;">'+
+          '<button class="btn primary" onclick="saveNoteEdit('+n.id+')">Save</button>'+
+          '<button class="btn" onclick="cancelNoteEdit('+n.id+')">Cancel</button>'+
+        '</div>'+
+      '</div>';
+    }
+    return '<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'+
+        '<span style="font-size:14px;font-weight:500;color:var(--text);">'+esc(n.title)+'</span>'+
+        '<div style="display:flex;gap:6px;align-items:center;">'+
+          '<span class="tag tag-'+n.subject.toLowerCase()+'">'+n.subject+'</span>'+
+          '<span style="font-size:11px;color:var(--text-3);">'+n.date+'</span>'+
+          '<button class="del-btn" onclick="editNote('+n.id+')" title="Edit" style="font-size:12px;padding:2px 6px;">✎</button>'+
+          '<button class="del-btn" onclick="deleteNote('+n.id+')" title="Delete">×</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="font-size:13px;color:var(--text-2);line-height:1.6;white-space:pre-wrap;">'+esc(n.body)+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function editNote(id){var n=notes.find(n=>n.id===id);if(n){n.editing=true;renderNotes();}}
+function cancelNoteEdit(id){var n=notes.find(n=>n.id===id);if(n){n.editing=false;renderNotes();}}
+function saveNoteEdit(id){
+  var n=notes.find(n=>n.id===id);
+  if(!n)return;
+  var t=document.getElementById('nedit-title-'+id).value.trim();
+  var b=document.getElementById('nedit-body-'+id).value.trim();
+  var s=document.getElementById('nedit-subj-'+id).value;
+  if(t){n.title=t;n.body=b;n.subject=s;}
+  n.editing=false;renderNotes();
+}
+function deleteNote(id){notes=notes.filter(n=>n.id!==id);renderNotes();}
+
+function renderHabits(){
+  var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  document.getElementById('day-labels-row').innerHTML='<div style="width:22px;"></div>'+days.map(d=>'<div class="day-lbl">'+d+'</div>').join('');
+  var colors=['#7F77DD','#EF9F27','#1D9E75','#D85A30','#378ADD'];
+  document.getElementById('habit-grid').innerHTML=habits.map((h,hi)=>{
+    var dots=days.map((d,di)=>{
+      var k=h+'_'+di,f=habitData[k];
+      return '<div class="habit-dot '+(f?'filled':'')+'" style="'+(f?'background:'+colors[hi%colors.length]+';':'')+'" onclick="toggleHabit(\''+h.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\','+di+')"></div>';
+    }).join('');
+    return '<div class="habit-row"><span class="habit-name">'+h+'</span><div class="habit-dots">'+dots+'</div><button class="del-btn" style="margin-left:6px;" onclick="deleteHabit('+hi+')" title="Delete habit">×</button></div>';
+  }).join('');
+}
+
+function toggleHabit(h,d){habitData[h+'_'+d]=!habitData[h+'_'+d];renderHabits();}
+function addHabit(){var inp=document.getElementById('habit-input');if(!inp.value.trim())return;habits.push(inp.value.trim());inp.value='';renderHabits();}
+function deleteHabit(idx){habits.splice(idx,1);renderHabits();}
+
+/* ── Mock test templates ── */
+var mockTemplates=[
+  {id:'jee',name:'JEE Mains',subjects:[{name:'Physics',max:100},{name:'Chemistry',max:100},{name:'Mathematics',max:100}],locked:true},
+  {id:'jee-adv',name:'JEE Advanced',subjects:[{name:'Physics',max:60},{name:'Chemistry',max:60},{name:'Mathematics',max:60}],locked:true},
+];
+var editingTemplateId=null;
+
+function getTemplate(id){return mockTemplates.find(t=>t.id===id);}
+function currentTemplate(){return getTemplate(document.getElementById('mock-template-select').value);}
+
+function renderTemplateSelect(){
+  var sel=document.getElementById('mock-template-select');
+  var cur=sel.value;
+  sel.innerHTML=mockTemplates.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');
+  if(cur&&mockTemplates.find(t=>t.id===cur))sel.value=cur;
+  renderScoreInputs();
+}
+
+function onTemplateChange(){renderScoreInputs();}
+
+function renderScoreInputs(){
+  var tmpl=currentTemplate();
+  if(!tmpl)return;
+  var box=document.getElementById('mock-score-inputs');
+  box.innerHTML=tmpl.subjects.map((s,i)=>
+    '<div class="input-row" style="margin-bottom:0;"><input type="number" id="mock-s-'+i+'" placeholder="'+esc(s.name)+' /'+s.max+'" min="0" max="'+s.max+'"></div>'
+  ).join('');
+}
+
+function renderTemplateList(){
+  var el=document.getElementById('template-list');
+  if(!mockTemplates.length){el.innerHTML='<div style="font-size:13px;color:var(--text-3);">No templates.</div>';return;}
+  el.innerHTML=mockTemplates.map(t=>
+    '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);">'+
+    '<div><div style="font-size:13px;font-weight:500;color:var(--text);">'+esc(t.name)+'</div>'+
+    '<div style="font-size:11px;color:var(--text-3);">'+t.subjects.map(s=>s.name+' /'+s.max).join(' · ')+'</div></div>'+
+    (!t.locked?'<div style="display:flex;gap:4px;"><button class="del-btn" style="font-size:12px;padding:2px 6px;" onclick="editTemplate(\''+t.id+'\')">✎</button><button class="del-btn" onclick="deleteTemplate(\''+t.id+'\')">×</button></div>':
+    '<span style="font-size:11px;color:var(--text-4);">default</span>')+
+    '</div>'
+  ).join('');
+}
+
+function startNewTemplate(){
+  editingTemplateId=null;
+  document.getElementById('tmpl-name').value='';
+  document.getElementById('tmpl-subjects-list').innerHTML='';
+  addTemplateSubject();addTemplateSubject();addTemplateSubject();
+  document.getElementById('template-editor').style.display='block';
+}
+
+function editTemplate(id){
+  var t=getTemplate(id);if(!t||t.locked)return;
+  editingTemplateId=id;
+  document.getElementById('tmpl-name').value=t.name;
+  var sl=document.getElementById('tmpl-subjects-list');
+  sl.innerHTML='';
+  t.subjects.forEach(s=>addTemplateSubjectRow(s.name,s.max));
+  document.getElementById('template-editor').style.display='block';
+}
+
+function addTemplateSubject(){addTemplateSubjectRow('',100);}
+
+function addTemplateSubjectRow(name,max){
+  var sl=document.getElementById('tmpl-subjects-list');
+  var row=document.createElement('div');
+  row.className='input-row';row.style.marginBottom='0';
+  row.innerHTML='<input type="text" placeholder="Subject name" value="'+esc(name)+'" style="flex:2;">'+
+    '<input type="number" placeholder="Max" value="'+max+'" min="1" style="width:70px;flex:none;">'+
+    '<button class="del-btn" onclick="this.parentElement.remove()">×</button>';
+  sl.appendChild(row);
+}
+
+function saveTemplate(){
+  var name=document.getElementById('tmpl-name').value.trim();
+  if(!name)return;
+  var rows=document.getElementById('tmpl-subjects-list').querySelectorAll('.input-row');
+  var subjects=[];
+  rows.forEach(r=>{
+    var inputs=r.querySelectorAll('input');
+    var n=inputs[0].value.trim(),m=parseInt(inputs[1].value)||100;
+    if(n)subjects.push({name:n,max:m});
+  });
+  if(!subjects.length)return;
+  if(editingTemplateId){
+    var t=getTemplate(editingTemplateId);
+    if(t){t.name=name;t.subjects=subjects;}
+  } else {
+    mockTemplates.push({id:'tmpl-'+Date.now(),name:name,subjects:subjects,locked:false});
+  }
+  editingTemplateId=null;
+  document.getElementById('template-editor').style.display='none';
+  renderTemplateSelect();
+  renderTemplateList();
+}
+
+function cancelTemplate(){
+  editingTemplateId=null;
+  document.getElementById('template-editor').style.display='none';
+}
+
+function deleteTemplate(id){
+  mockTemplates=mockTemplates.filter(t=>t.id!==id);
+  renderTemplateSelect();renderTemplateList();
+}
+
+function logMock(){
+  var tmpl=currentTemplate();if(!tmpl)return;
+  var scores={};var total=0;var maxTotal=0;
+  tmpl.subjects.forEach(function(s,i){
+    var v=Math.min(parseInt(document.getElementById('mock-s-'+i).value)||0,s.max);
+    scores[s.name]=v;total+=v;maxTotal+=s.max;
+  });
+  var testName=document.getElementById('mock-name-input').value.trim()||tmpl.name;
+  var date=document.getElementById('mock-date').value||new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  mockTests.unshift({id:Date.now(),templateId:tmpl.id,name:testName,scores:scores,total:total,maxTotal:maxTotal,date:date});
+  tmpl.subjects.forEach(function(_,i){document.getElementById('mock-s-'+i).value='';});
+  document.getElementById('mock-name-input').value='';
+  document.getElementById('mock-date').value='';
+  renderJEE();
+}
+
+function deleteMock(id){mockTests=mockTests.filter(t=>t.id!==id);renderJEE();}
+
+function renderJEE(){
+  document.getElementById('jee-days').textContent=daysTo('2026-01-20');
+  document.getElementById('mock-count').textContent=mockTests.length;
+  if(mockTests.length){
+    var avg=Math.round(mockTests.reduce((a,t)=>a+t.total,0)/mockTests.length);
+    var best=mockTests.reduce((b,t)=>t.total>b.total?t:b,mockTests[0]);
+    var avgMax=Math.round(mockTests.reduce((a,t)=>a+t.maxTotal,0)/mockTests.length);
+    document.getElementById('avg-score').textContent=avg;
+    document.getElementById('avg-score-denom').textContent='avg of '+avgMax;
+    document.getElementById('best-score').textContent=best.total;
+    document.getElementById('best-score-denom').textContent='out of '+best.maxTotal;
+  }
+  var l=document.getElementById('mock-list');
+  if(!mockTests.length){l.innerHTML='<div style="font-size:13px;color:var(--text-3);padding:10px 0;">No tests logged yet.</div>';return;}
+  l.innerHTML=mockTests.map(t=>
+    '<div class="mock-entry" style="align-items:flex-start;">'+
+    '<div style="flex:1;">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">'+
+        '<span style="font-weight:500;color:var(--text);font-size:14px;">'+t.total+' / '+t.maxTotal+'</span>'+
+        '<span style="font-size:11px;color:var(--text-3);">'+esc(t.date)+'</span>'+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--text-2);margin-bottom:3px;">'+esc(t.name)+'</div>'+
+      '<div style="font-size:11px;color:var(--text-3);">'+Object.entries(t.scores).map(([k,v])=>k+': '+v).join(' · ')+'</div>'+
+    '</div>'+
+    '<button class="del-btn" onclick="deleteMock('+t.id+')" style="margin-top:2px;">×</button>'+
+    '</div>'
+  ).join('');
+}
+
+function switchSyllabus(subj,el){
+  currentSyllabusSubject=subj;
+  document.querySelectorAll('#syllabus-tabs .pill-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');renderSyllabus();
+}
+
+function syllabusKey(subj,group,chap,idx){return subj+'|'+group+'|'+chap+'_'+idx;}
+function toggleSyllabusCheck(subj,group,chap,idx){
+  var k=syllabusKey(subj,group,chap,idx);syllabusState[k]=!syllabusState[k];renderSyllabus();
+}
+function toggleGroup(el){el.closest('.syllabus-subject').classList.toggle('subj-collapsed');}
+
+function renderSyllabus(){
+  var subj=currentSyllabusSubject,groups=SYLLABUS[subj];
+  var checkLabels=['T','C','J','★'],checkTitles=['Theory','CET PYQs','JEE PYQs','Mastered'];
+  var totalChaps=0,masterCount=0;
+  groups.forEach(g=>g.chapters.forEach(c=>{totalChaps++;if(syllabusState[syllabusKey(subj,g.name,c,3)])masterCount++;}));
+  var pct=totalChaps?Math.round(masterCount/totalChaps*100):0;
+  document.getElementById('syllabus-progress-bar').innerHTML=
+    '<div style="display:flex;align-items:center;gap:12px;">'+
+    '<div style="flex:1;height:5px;background:var(--surface);border-radius:3px;overflow:hidden;">'+
+    '<div style="height:100%;background:var(--accent);border-radius:3px;width:'+pct+'%;transition:width 0.3s;"></div></div>'+
+    '<span style="font-size:12px;color:var(--text-2);white-space:nowrap;">'+masterCount+' / '+totalChaps+' mastered ('+pct+'%)</span></div>';
+  document.getElementById('syllabus-content').innerHTML=groups.map(g=>{
+    var gDone=g.chapters.filter(c=>syllabusState[syllabusKey(subj,g.name,c,3)]).length;
+    var rows=g.chapters.map(chap=>{
+      var checks=checkLabels.map((lbl,idx)=>{
+        var k=syllabusKey(subj,g.name,chap,idx),done=syllabusState[k];
+        return '<div class="check-box c'+(idx+1)+' '+(done?'done':'')+'" title="'+checkTitles[idx]+'" onclick="toggleSyllabusCheck(\''+subj+'\',\''+g.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\',\''+chap.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\','+idx+')">'+( done?lbl:'')+'</div>';
+      }).join('');
+      return '<div class="chapter-row"><div class="chapter-name">'+chap+'</div><div class="chapter-checks">'+checks+'</div></div>';
+    }).join('');
+    return '<div class="syllabus-subject"><div class="syllabus-subj-header" onclick="toggleGroup(this)"><span>'+g.name+'</span><span class="progress-pct">'+gDone+'/'+g.chapters.length+' mastered</span></div><div class="chapters-list"><div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;"><div style="flex:1;"></div><div style="display:flex;gap:6px;">'+checkTitles.map(l=>'<div class="check-lbl" style="font-size:10px;color:var(--text-3);text-align:center;width:22px;">'+l+'</div>').join('')+'</div></div>'+rows+'</div></div>';
+  }).join('');
+}
+
+renderHome();renderHabits();renderJEE();renderSyllabus();
+renderTemplateSelect();renderTemplateList();
+</script>
+</body>
+</html>
